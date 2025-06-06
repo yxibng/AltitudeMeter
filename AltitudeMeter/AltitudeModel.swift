@@ -145,6 +145,13 @@ extension AltitudeDataModel {
         }
     }
     
+    var altitudeAccuracy: String {
+        guard let accuracy = altitudeModel.altitudeAccuracy else {
+            return "N/A"
+        }
+        return String(format: "海拔精度 %.2f m", accuracy)
+    }
+    
     var altitude: String {
         guard let altitude = altitudeModel.altitude else {
             return "N/A"
@@ -196,6 +203,22 @@ extension AltitudeDataModel {
         formatter.dateFormat = "HH:mm:ss"
         return formatter.string(from: sunset)
     }
+    
+    var degrees: Double {
+        let degree = altitudeModel.heading?.magneticHeading ?? 0.0
+        return -degree // 反转方向
+    }
+    
+    var bottomContent: String {
+        switch altitudeModel.preferences.bottomContentType {
+        case .gps:
+            return coordinate
+        case .sunrise:
+            return "日出时间: \(sunrise)\n日落时间: \(sunset)"
+        case .geocodeLocation:
+            return geocodeLocation
+        }
+    }
 }
 
 
@@ -203,9 +226,6 @@ class AltitudeDataModel: ObservableObject {
     @Published var altitudeModel = AltitudeModel()
     private let locationManager = LocationManager()
     private var cancellables = Set<AnyCancellable>()
-
-
-
     init() {
         setup()
     }
@@ -220,8 +240,14 @@ class AltitudeDataModel: ObservableObject {
             self.altitudeModel.sunrise = nil
             return
         }
-        self.altitudeModel.altitude = location.altitude
-        self.altitudeModel.altitudeAccuracy = location.verticalAccuracy
+        
+        if location.verticalAccuracy > 0 {
+            self.altitudeModel.altitude = location.altitude
+            self.altitudeModel.altitudeAccuracy = location.verticalAccuracy
+        } else {
+            self.altitudeModel.altitude = nil
+            self.altitudeModel.altitudeAccuracy = nil
+        }
         self.altitudeModel.location = location.coordinate
         self.altitudeModel.speed = location.speed >= 0 ? location.speed : nil // 速度可能为负值，表示无效数据
         
