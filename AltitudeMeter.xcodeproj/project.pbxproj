@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		86AAEE642DF2CFFD002ACDBD /* SwiftSunriseSunset in Frameworks */ = {isa = PBXBuildFile; productRef = 86AAEE632DF2CFFD002ACDBD /* SwiftSunriseSunset */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		86082AA42DF1866900F4C824 /* AltitudeMeter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AltitudeMeter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				86AAEE642DF2CFFD002ACDBD /* SwiftSunriseSunset in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = AltitudeMeter;
 			packageProductDependencies = (
+				86AAEE632DF2CFFD002ACDBD /* SwiftSunriseSunset */,
 			);
 			productName = AltitudeMeter;
 			productReference = 86082AA42DF1866900F4C824 /* AltitudeMeter.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = 86082A9B2DF1866900F4C824;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				86AAEE622DF2CFFD002ACDBD /* XCRemoteSwiftPackageReference "swift-sunrise-sunset" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 86082AA52DF1866900F4C824 /* Products */;
 			projectDirPath = "";
@@ -251,13 +260,18 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6LD22YZ4CB;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "需要始终位置权限获取经纬度和海拔";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "需要位置权限获取经纬度和海拔";
+				INFOPLIST_KEY_NSMotionUsageDescription = "需要使用气压计获取海拔高度";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -278,13 +292,18 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6LD22YZ4CB;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "需要始终位置权限获取经纬度和海拔";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "需要位置权限获取经纬度和海拔";
+				INFOPLIST_KEY_NSMotionUsageDescription = "需要使用气压计获取海拔高度";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -320,6 +339,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		86AAEE622DF2CFFD002ACDBD /* XCRemoteSwiftPackageReference "swift-sunrise-sunset" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "git@github.com:natesabrown/swift-sunrise-sunset.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.2.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		86AAEE632DF2CFFD002ACDBD /* SwiftSunriseSunset */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 86AAEE622DF2CFFD002ACDBD /* XCRemoteSwiftPackageReference "swift-sunrise-sunset" */;
+			productName = SwiftSunriseSunset;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 86082A9C2DF1866900F4C824 /* Project object */;
 }
