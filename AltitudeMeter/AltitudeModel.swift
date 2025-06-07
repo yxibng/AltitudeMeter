@@ -158,9 +158,9 @@ extension AltitudeDataModel {
         }
         switch altitudeModel.preferences.altitudeUnit {
         case .meter:
-            return String(format: "%.2f m", altitude)
+            return String(format: "%.0f m", altitude)
         case .feet:
-            return String(format: "%.2f ft", altitude * 3.28084)
+            return String(format: "%.0f ft", altitude * 3.28084)
         }
     }
     

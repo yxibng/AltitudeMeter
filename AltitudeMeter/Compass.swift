@@ -29,10 +29,10 @@ struct Triangle: Shape {
 
 
 struct Compass<Content: View>: View {
-
+    
     var degrees: Double
     @ViewBuilder var makeContent: () -> Content
-
+    
     var triangleWidth: CGFloat = 50
     var triangleHeight: CGFloat = 25 // 三角形的高度
     var trianglePadding: CGFloat = 10 // 三角形的内边距
@@ -51,50 +51,60 @@ struct Compass<Content: View>: View {
         GeometryReader { geometry in
             ZStack {
                 Circle()
-                    .fill(Color.green.opacity(0.5))
+                    .fill(Color.white.opacity(0.5))
                     .blur(radius: 0.8)
                     .frame(width: min(geometry.size.width, geometry.size.height),
                            height: min(geometry.size.width, geometry.size.height))
                 VStack {
                     ZStack() {
                         Triangle()
-                            .fill(Color.red).frame(width: triangleWidth, height: triangleHeight)
+                            .fill(Color.red)
+                            .frame(width: triangleWidth, height: triangleHeight)
                         Text("N")
                     }
                     .padding(trianglePadding)
-                    .background(Color.white.opacity(0.5))
+                    
                     
                     Spacer()
                     
                     ZStack() {
                         Triangle()
-                            .fill(Color.red).frame(width: triangleWidth, height: triangleHeight)
+                            .fill(Color.red)
+                            .frame(width: triangleWidth, height: triangleHeight)
                         Text("S")
                     }
                     .padding(trianglePadding)
-                    .rotationEffect(.degrees(180)).background(Color.white.opacity(0.5))
+                    .rotationEffect(.degrees(180))
                 }
                 .frame(width: min(geometry.size.width, geometry.size.height),
                        height: min(geometry.size.width, geometry.size.height))
                 .rotationEffect(.degrees(degrees))
-
-                makeContent().overlay {
-                    Circle()
-                        .fill(Color.white.opacity(0.5))
-                        .blur(radius: 0.8)
-                        .frame(width: centerCricleSize(geometry: geometry).width,
-                               height: centerCricleSize(geometry: geometry).height)
-                }
-            }.background(Color.red)
+                
+                makeContent()
+                    .frame(width: centerCricleSize(geometry: geometry).width,
+                           height: centerCricleSize(geometry: geometry).height)
+                    .overlay {
+                        Circle().fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [.orange.opacity(0.5),
+                                                            .blue.opacity(0.5)]),
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                        
+                        
+                    }
+            }
         }
         
         
-
+        
         
     }
 }
 
 
 #Preview {
-//    Compass(degrees: 100)
+    //    Compass(degrees: 100)
 }
