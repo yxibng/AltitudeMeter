@@ -41,7 +41,6 @@ struct Compass<Content: View>: View {
         let width = geometry.size.width
         let height = geometry.size.height
         let radius = min(width, height) / 2 - triangleHeight - trianglePadding * 2
-        print(geometry.size)
         return CGSize(width: radius * 2, height: radius * 2)
         
     }
