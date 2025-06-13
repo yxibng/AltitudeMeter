@@ -97,7 +97,7 @@ struct MainContentView: View {
             SettingsView(dataModel: dataModel)
         }
         .fullScreenCover(isPresented: $showCamera) {
-            CameraView()
+            CameraView(altitudeDataMode: dataModel)
         }
     }
     
