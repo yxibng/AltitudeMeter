@@ -224,6 +224,8 @@ extension AltitudeDataModel {
 
 class AltitudeDataModel: ObservableObject {
     @Published var altitudeModel = AltitudeModel()
+    @Published var showNoLocationAuthAlert = false
+    @Published var showNoCMAuthAlert = false
     private let locationManager = LocationManager()
     private var cancellables = Set<AnyCancellable>()
     init() {
@@ -274,19 +276,42 @@ class AltitudeDataModel: ObservableObject {
     private func setup() {
         locationManager.startUpdatingHeading()
         locationManager.startUpdatingLocation()
-        locationManager.$location.sink {[weak self] location in
-            self?.onLocationUpdate(location: location)
-        }
-        .store(in: &cancellables)
+        locationManager
+            .$location
+            .receive(on: DispatchQueue.main)
+            .sink {[weak self] location in
+                self?.onLocationUpdate(location: location)
+            }
+            .store(in: &cancellables)
         
-        locationManager.$pressure.sink { [weak self] pressure in
-            self?.altitudeModel.pressure = pressure
-        }.store(in: &cancellables)
+        locationManager
+            .$pressure
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] pressure in
+                self?.altitudeModel.pressure = pressure
+            }.store(in: &cancellables)
         
-        locationManager.$heading.sink { [weak self] heading in
-            self?.altitudeModel.heading = heading
-            // 处理方向数据（如果需要）
-        }.store(in: &cancellables)
+        locationManager
+            .$heading
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] heading in
+                self?.altitudeModel.heading = heading
+                // 处理方向数据（如果需要）
+            }.store(in: &cancellables)
+
+        locationManager
+            .$locationAuthorizationStatus
+            .map { $0 == .denied || $0 == .restricted }
+            .receive(on: DispatchQueue.main)
+            .assign(to: \.showNoLocationAuthAlert, on: self)
+            .store(in: &cancellables)
+
+        locationManager
+            .$cmAuthorizationStatus
+            .map { $0 == .denied || $0 == .restricted }
+            .receive(on: DispatchQueue.main)
+            .assign(to: \.showNoCMAuthAlert, on: self)
+            .store(in: &cancellables)
     }
 }
 

@@ -18,6 +18,7 @@ struct SnapshotView: View {
     }
     
     @Environment(\.dismiss) private var dismiss
+    @State var showNoAuthAlert = false
     
     var bottomView: some View {
         ZStack {
@@ -28,6 +29,11 @@ struct SnapshotView: View {
                         try await PhotoLibrary.saveImage(image, location: coordinate)
                     } catch {
                         print("Error saving image: \(error)")
+                        if let error = error as? PhotoLibrary.PhotoLibraryError, error == .authorizationDenied {
+                            Task { @MainActor in
+                                showNoAuthAlert = true
+                            }
+                        }
                     }
                 }
             } label: {
@@ -62,7 +68,18 @@ struct SnapshotView: View {
                 .frame(maxWidth: .infinity, maxHeight: Layout.bottomHeight)
                 .background(Color.black.opacity(0.5))
             Spacer().frame(height: UIScreen.safeAreaInsets.bottom)
-        }.ignoresSafeArea(edges: [.top, .bottom])
+        }
+        .ignoresSafeArea(edges: [.top, .bottom])
+        .alert("没有相册权限", isPresented: $showNoAuthAlert) {
+            Button("取消", role: .cancel) { }
+            Button("去设置") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                }
+            }
+        } message: {
+            Text("请在设置中开启相册权限")
+        }
         
     }
 }

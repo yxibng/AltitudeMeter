@@ -64,6 +64,7 @@ struct CameraView: View {
     
     @State var snpashot: UIImage? = nil
     @State var showSnapshot = false
+    @State var showNoAuthAlert = false
     
     struct Layout {
         static let bottomHeight: CGFloat = 62
@@ -177,13 +178,25 @@ struct CameraView: View {
                 .frame(maxWidth: .infinity, maxHeight: Layout.bottomHeight)
                 .background(Color.black.opacity(0.5))
             Spacer().frame(height: UIScreen.safeAreaInsets.bottom)
-        }.ignoresSafeArea(edges: [.top, .bottom])
+        }
+        .ignoresSafeArea(edges: [.top, .bottom])
         .fullScreenCover(isPresented: $showSnapshot) {
             if let snapshot = snpashot {
                 SnapshotView(image: snapshot, coordinate: altitudeDataMode.altitudeModel.location)
             } else {
                 Text("Snapshot not available")
             }
+        }.onChange(of: cameraViewModel.showNoAuthorizationAlert) { newValue in
+            showNoAuthAlert = newValue
+        }.alert("没有相机权限", isPresented: $showNoAuthAlert) {
+            Button("取消", role: .cancel) { }
+            Button("去设置") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+        } message: {
+            Text("请在设置中开启相机权限")
         }
     }
 }

@@ -7,16 +7,23 @@
 
 
 import SwiftUI
+import AVFoundation
 
 class CameraViewModel: ObservableObject {
     let camera = Camera()
     @Published var videoFrame: Image?
+    @Published var showNoAuthorizationAlert = false
     init() {
         Task {
             await handleCameraPreviews()
         }
     }
-    func handleCameraPreviews() async {
+    func handleCameraPreviews() async {        
+        let authorizationStatus = await AVCaptureDevice.requestAccess(for: .video)
+        Task { @MainActor in
+            self.showNoAuthorizationAlert = !authorizationStatus
+        }
+
         let imageStream = camera.previewStream
             .map { $0.image }
         for await image in imageStream {

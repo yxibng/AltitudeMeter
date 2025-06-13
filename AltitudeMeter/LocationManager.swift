@@ -9,8 +9,6 @@
 import CoreLocation
 import CoreMotion
 
-
-
 class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     let manager = CLLocationManager()
     let aiMeter = CMAltimeter()
@@ -18,7 +16,9 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var location: CLLocation? // 包含经纬度、海拔等数据
     @Published var pressure: Double? // 包含气压数据，单位为千帕（kPa）
     @Published var heading: CLHeading? // 方向数据
-    
+    @Published var locationAuthorizationStatus: CLAuthorizationStatus = .notDetermined // 定位权限状态
+    @Published var cmAuthorizationStatus: CMAuthorizationStatus = .notDetermined // 运动权限状态
+
     override init() {
         super.init()
         manager.delegate = self
@@ -30,12 +30,13 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             self.pressure = data?.pressure.doubleValue // 获取气压数据
         }
     }
-    
+
     func startUpdatingLocation() {
         Task {
             if CLLocationManager.locationServicesEnabled() {
                 manager.startUpdatingLocation()
             }
+            self.cmAuthorizationStatus = CMAltimeter.authorizationStatus()
         }
     }
     
@@ -70,9 +71,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     // MARK: - CLLocationManagerDelegate
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        DispatchQueue.main.async {
-            self.location = locations.last // 更新位置数据
-        }
+        self.location = locations.last
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
@@ -80,9 +79,10 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
-        DispatchQueue.main.async {
-            self.heading = newHeading
-        }
+        self.heading = newHeading // 更新方向数据
     }
     
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        self.locationAuthorizationStatus = manager.authorizationStatus
+    }
 }

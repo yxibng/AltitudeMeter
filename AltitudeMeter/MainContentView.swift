@@ -11,8 +11,9 @@ struct MainContentView: View {
     
     @State private var showSettings = false
     @State private var showCamera = false
-    
     @State private var degree: Double = 0
+    @State private var showNoLocationAuthAlert = false
+    @State private var showNoCMAuthAlert = false
     
     @StateObject private var dataModel = AltitudeDataModel()
     
@@ -84,6 +85,7 @@ struct MainContentView: View {
                 }
             }
         }
+            
     }
         
     
@@ -98,9 +100,30 @@ struct MainContentView: View {
         }
         .fullScreenCover(isPresented: $showCamera) {
             CameraView(altitudeDataMode: dataModel)
+        }.alert("没有定位权限", isPresented: $showNoLocationAuthAlert) {
+            Button("取消", role: .cancel) { }
+            Button("取消") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+        } message: {
+            Text("请在设置中开启定位权限")
+        }.onChange(of: dataModel.showNoLocationAuthAlert) { newValue in
+            showNoLocationAuthAlert = newValue
+        }.onChange(of: dataModel.showNoCMAuthAlert) { newValue in
+            showNoCMAuthAlert = newValue
+        }.alert("没有运动与健身权限，无法获取当前气压和速度", isPresented: $showNoCMAuthAlert) {
+            Button("取消", role: .cancel) { }
+            Button("去设置") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+        } message: {
+            Text("请在设置中开启运动与健身权限")
         }
     }
-    
 }
 
 
