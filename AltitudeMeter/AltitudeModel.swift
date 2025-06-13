@@ -11,23 +11,56 @@ import Combine
 import SwiftUI
 import SwiftSunriseSunset
 
-extension CLLocationCoordinate2D {
-    private func convertToDMS(decimal: Double) -> String {
-        let absoluteLatitude = abs(decimal)
-        let degrees = Int(absoluteLatitude)
-        let minutesDecimal = (absoluteLatitude - Double(degrees)) * 60
-        let minutes = Int(minutesDecimal)
-        let seconds = (minutesDecimal - Double(minutes)) * 60
-        let direction = decimal >= 0 ? "N" : "S"
-        
-        // 格式化输出（秒保留1位小数，可调整）
-        return String(format: "%d°%d′%.1f″%@", degrees, minutes, seconds, direction)
+// 经纬度格式化工具类
+class CoordinateFormatter {
+    // 将十进制经纬度转换为度分秒字符串
+    static func formatToDMS(latitude: Double, longitude: Double) -> (String, String) {
+        let latitudeStr = formatCoordinate(value: latitude, isLatitude: true)
+        let longitudeStr = formatCoordinate(value: longitude, isLatitude: false)
+        return (latitudeStr, longitudeStr)
     }
+    
+    // 格式化单个坐标（纬度/经度）
+    private static func formatCoordinate(value: Double, isLatitude: Bool) -> String {
+        // 确定方向（N/S 或 E/W）
+        let direction: String
+        let absValue = abs(value)
+        
+        if isLatitude {
+            direction = value >= 0 ? "N" : "S"
+        } else {
+            direction = value >= 0 ? "E" : "W"
+        }
+        
+        // 提取度、分、秒
+        let degrees = Int(absValue)
+        let minutes = Int((absValue - Double(degrees)) * 60)
+        let seconds = (absValue - Double(degrees) - Double(minutes) / 60) * 3600
+        
+        // 格式化字符串（保留两位小数）
+        return "\(degrees)°\(minutes)'\(String(format: "%.2f", seconds))\"\(direction)"
+    }
+    
+    // 将度分秒字符串转回十进制（可选）
+    static func dmsToDecimal(degrees: Int, minutes: Int, seconds: Double, direction: String) -> Double {
+        let decimal = Double(degrees) + Double(minutes) / 60 + seconds / 3600
+        if #available(iOS 16.0, *) {
+            return direction.contains(["S", "W"]) ? -decimal : decimal
+        } else {
+            // Fallback on earlier versions
+            return direction == "S" || direction == "W" ? -decimal : decimal
+        }
+    }
+}
+
+
+
+extension CLLocationCoordinate2D {
     var latitudeDMS: String {
-        self.convertToDMS(decimal: latitude)
+        CoordinateFormatter.formatToDMS(latitude: latitude, longitude: longitude).0
     }
     var longitudeDMS: String {
-        self.convertToDMS(decimal: longitude)
+        CoordinateFormatter.formatToDMS(latitude: latitude, longitude: longitude).1
     }
 }
 

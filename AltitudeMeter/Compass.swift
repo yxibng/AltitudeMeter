@@ -9,6 +9,9 @@ import SwiftUI
 
 
 struct Triangle: Shape {
+    
+    var radius: CGFloat = 0
+    
     func path(in rect: CGRect) -> Path {
         var path = Path()
         
@@ -18,11 +21,27 @@ struct Triangle: Shape {
         let bottomRight = CGPoint(x: rect.maxX, y: rect.maxY)
         
         // 构建三角形路径
-        path.move(to: topPoint)
-        path.addLine(to: bottomLeft)
+        path.move(to: bottomLeft)
+        path.addLine(to: topPoint)
         path.addLine(to: bottomRight)
-        path.closeSubpath()
         
+        if radius > rect.width / 2 {
+            let offsetY = sqrt(radius * radius - rect.size.width * rect.size.width / 4)
+            let centerY = offsetY + rect.height
+            let centerX = rect.midX
+            
+            let angle = atan2(offsetY, rect.width / 2)
+            
+            let startAngle = CGFloat.pi * 2 - angle
+            let endAngle = CGFloat.pi + angle
+            path.addArc(center: CGPointMake(centerX, centerY),
+                        radius: radius,
+                        startAngle: Angle(radians: startAngle),
+                        endAngle: Angle(radians: endAngle),
+                        clockwise: true)
+        } else {
+            path.closeSubpath()
+        }
         return path
     }
 }
@@ -33,7 +52,7 @@ struct Compass<Content: View>: View {
     var degrees: Double
     @ViewBuilder var makeContent: () -> Content
     
-    var triangleWidth: CGFloat = 50
+    var triangleWidth: CGFloat = 70
     var triangleHeight: CGFloat = 25 // 三角形的高度
     var trianglePadding: CGFloat = 10 // 三角形的内边距
     
@@ -42,9 +61,14 @@ struct Compass<Content: View>: View {
         let height = geometry.size.height
         let radius = min(width, height) / 2 - triangleHeight - trianglePadding * 2
         return CGSize(width: radius * 2, height: radius * 2)
-        
     }
     
+    
+    
+    private func triangleRadius(geometry: GeometryProxy) -> CGFloat {
+        return centerCricleSize(geometry: geometry).height / 2 + trianglePadding
+    }
+
     var body: some View {
         
         GeometryReader { geometry in
@@ -55,25 +79,26 @@ struct Compass<Content: View>: View {
                     .frame(width: min(geometry.size.width, geometry.size.height),
                            height: min(geometry.size.width, geometry.size.height))
                 VStack {
-                    ZStack() {
-                        Triangle()
-                            .fill(Color.red)
-                            .frame(width: triangleWidth, height: triangleHeight)
-                        Text("N")
-                    }
-                    .padding(trianglePadding)
                     
-                    
+                    Triangle(radius: triangleRadius(geometry: geometry))
+                        .fill(Color.orange.opacity(0.5))
+                        .overlay(content: {
+                            Text("N")
+                                .foregroundColor(.white)
+                        })
+                        .frame(width: triangleWidth, height: triangleHeight)
+                        .padding(trianglePadding)
+
                     Spacer()
                     
-                    ZStack() {
-                        Triangle()
-                            .fill(Color.red)
-                            .frame(width: triangleWidth, height: triangleHeight)
-                        Text("S")
-                    }
-                    .padding(trianglePadding)
-                    .rotationEffect(.degrees(180))
+                    Triangle(radius: triangleRadius(geometry: geometry))
+                        .fill(Color.blue.opacity(0.5))
+                        .overlay(content: {
+                            Text("S").foregroundColor(.white)
+                        })
+                        .frame(width: triangleWidth, height: triangleHeight)
+                        .padding(trianglePadding)
+                        .rotationEffect(.degrees(180))
                 }
                 .frame(width: min(geometry.size.width, geometry.size.height),
                        height: min(geometry.size.width, geometry.size.height))
@@ -91,10 +116,9 @@ struct Compass<Content: View>: View {
                                 endPoint: .bottom
                             )
                         )
-                        
-                        
                     }
             }
+            .frame(width: geometry.size.width, height: geometry.size.height)
         }
         
         

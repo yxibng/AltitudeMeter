@@ -66,9 +66,8 @@ struct SnapshotView: View {
                 .background(Color.red).clipped()
             bottomView
                 .frame(maxWidth: .infinity, maxHeight: Layout.bottomHeight)
-                .background(Color.black.opacity(0.5))
             Spacer().frame(height: UIScreen.safeAreaInsets.bottom)
-        }
+        }.background(Color.black)
         .ignoresSafeArea(edges: [.top, .bottom])
         .alert("没有相册权限", isPresented: $showNoAuthAlert) {
             Button("取消", role: .cancel) { }

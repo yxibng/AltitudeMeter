@@ -29,7 +29,9 @@ struct MainContentView: View {
     private var topContent: some View {
         VStack {
             Text(dataModel.pressure)
+                .foregroundColor(.white)
             Text(dataModel.altitudeAccuracy)
+                .foregroundColor(.white)
         }
     }
     
@@ -56,6 +58,7 @@ struct MainContentView: View {
 
     private var bottomContent: some View {
         Text(dataModel.bottomContent)
+            .foregroundColor(.white)
     }
     
     private var contentView: some View {
@@ -66,13 +69,17 @@ struct MainContentView: View {
                 topContent
                 Spacer()
                 compass
-                bottomContent.padding(.bottom, 20)
-            }.toolbar {
+                    .padding()
+                bottomContent
+                Spacer()
+            }
+            .toolbar {
                 ToolbarItem(placement:.navigationBarLeading) {
                     Button {
                         showSettings.toggle()
                     } label: {
                         Image(systemName: "gearshape")
+                            .tint(.white)
                     }
                 }
                 
@@ -81,6 +88,7 @@ struct MainContentView: View {
                         showCamera.toggle()
                     } label: {
                         Image(systemName: "camera")
+                            .tint(.white)
                     }
                 }
             }

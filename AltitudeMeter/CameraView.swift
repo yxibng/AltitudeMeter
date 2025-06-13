@@ -59,9 +59,7 @@ struct CameraPreview: View {
 struct CameraView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var altitudeDataMode: AltitudeDataModel
-    @State var showBarometer = true
-    @State var showCoordinate = true
-    
+
     @State var snpashot: UIImage? = nil
     @State var showSnapshot = false
     @State var showNoAuthAlert = false
@@ -88,10 +86,7 @@ struct CameraView: View {
             makeButton(imageName: "arrowshape.turn.up.backward") {
                 dismiss()
             }
-            Spacer()
-            makeButton(imageName: "arrow.triangle.2.circlepath") {
-                cameraViewModel.camera.switchCaptureDevice()
-            }
+ 
             Spacer()
             Button {
                 let snapshot = previewWithLabels.asImage(size: snapshotSize)
@@ -108,45 +103,12 @@ struct CameraView: View {
                 }
             }
             Spacer()
-            makeButton(imageName: "safari") {
-                showCoordinate.toggle()
-            }
-            Spacer()
-            makeButton(imageName: "barometer") {
-                showBarometer.toggle()
-            }
-        }.background(Color.red)
-            .padding(.horizontal, 20).background(Color.green)
-    }
-    
-    var labels: some View {
-        ZStack {
-            // 左上角
-            Text("实时海拔高度")
-                .padding()
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            
-            // 右上角
-            if showBarometer {
-                Text(altitudeDataMode.pressure)
-                    .padding()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-            }
-            
-            // 左下角
-            Text(altitudeDataMode.altitude)
-                .padding()
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
-            
-            // 右下角
-            if showCoordinate {
-                Text(altitudeDataMode.coordinate)
-                    .padding()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+            makeButton(imageName: "arrow.triangle.2.circlepath") {
+                cameraViewModel.camera.switchCaptureDevice()
             }
         }
+        .padding(.horizontal, 32)
     }
-    
 
     @StateObject var cameraViewModel = CameraViewModel()
     
@@ -163,7 +125,27 @@ struct CameraView: View {
                     .task {
                     await cameraViewModel.camera.start()
                 }
-                labels
+                VStack(alignment: .leading) {
+                    Spacer()
+                    HStack(alignment: .bottom, spacing: 0) {
+                        VStack(alignment: .leading) {
+                            Text("海拔：\(altitudeDataMode.altitude)")
+                                .foregroundColor(.white)
+                            
+                            Text("气压: \(altitudeDataMode.pressure)")
+                                .foregroundColor(.white)
+                            
+                            Text(altitudeDataMode.coordinate)
+                                .foregroundColor(.white)
+                            
+                            Text(altitudeDataMode.geocodeLocation)
+                                .foregroundColor(.white)
+                        }
+                        .padding()
+                        Spacer()
+                    }
+                    .background(.ultraThinMaterial)
+                }
             }
         }
     }
@@ -171,14 +153,15 @@ struct CameraView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            Spacer().frame(height: UIScreen.safeAreaInsets.top)
+            Spacer()
+                .frame(height: UIScreen.safeAreaInsets.top)
             previewWithLabels
                 .background(Color.gray).clipped()
             bottomView
                 .frame(maxWidth: .infinity, maxHeight: Layout.bottomHeight)
-                .background(Color.black.opacity(0.5))
-            Spacer().frame(height: UIScreen.safeAreaInsets.bottom)
-        }
+            Spacer()
+                .frame(height: UIScreen.safeAreaInsets.bottom)
+        }.background(Color.black)
         .ignoresSafeArea(edges: [.top, .bottom])
         .fullScreenCover(isPresented: $showSnapshot) {
             if let snapshot = snpashot {
