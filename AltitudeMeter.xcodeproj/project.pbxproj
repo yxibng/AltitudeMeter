@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		86AAEE642DF2CFFD002ACDBD /* SwiftSunriseSunset in Frameworks */ = {isa = PBXBuildFile; productRef = 86AAEE632DF2CFFD002ACDBD /* SwiftSunriseSunset */; };
+		86F2D6B62E002A29009AD382 /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 86F2D6B52E002A29009AD382 /* AlertToast */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				86AAEE642DF2CFFD002ACDBD /* SwiftSunriseSunset in Frameworks */,
+				86F2D6B62E002A29009AD382 /* AlertToast in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -71,6 +73,7 @@
 			name = AltitudeMeter;
 			packageProductDependencies = (
 				86AAEE632DF2CFFD002ACDBD /* SwiftSunriseSunset */,
+				86F2D6B52E002A29009AD382 /* AlertToast */,
 			);
 			productName = AltitudeMeter;
 			productReference = 86082AA42DF1866900F4C824 /* AltitudeMeter.app */;
@@ -102,6 +105,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				86AAEE622DF2CFFD002ACDBD /* XCRemoteSwiftPackageReference "swift-sunrise-sunset" */,
+				86F2D6B42E002A29009AD382 /* XCRemoteSwiftPackageReference "AlertToast" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 86082AA52DF1866900F4C824 /* Products */;
@@ -353,6 +357,14 @@
 				minimumVersion = 0.2.0;
 			};
 		};
+		86F2D6B42E002A29009AD382 /* XCRemoteSwiftPackageReference "AlertToast" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "git@github.com:elai950/AlertToast.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.3.9;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -360,6 +372,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 86AAEE622DF2CFFD002ACDBD /* XCRemoteSwiftPackageReference "swift-sunrise-sunset" */;
 			productName = SwiftSunriseSunset;
+		};
+		86F2D6B52E002A29009AD382 /* AlertToast */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 86F2D6B42E002A29009AD382 /* XCRemoteSwiftPackageReference "AlertToast" */;
+			productName = AlertToast;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

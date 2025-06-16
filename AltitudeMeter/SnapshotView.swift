@@ -7,6 +7,7 @@
 
 import SwiftUI
 import CoreLocation
+import AlertToast
 
 struct SnapshotView: View {
     
@@ -19,6 +20,7 @@ struct SnapshotView: View {
     
     @Environment(\.dismiss) private var dismiss
     @State var showNoAuthAlert = false
+    @State var showSavedToast = false
     
     var bottomView: some View {
         ZStack {
@@ -27,6 +29,9 @@ struct SnapshotView: View {
                 Task {
                     do {
                         try await PhotoLibrary.saveImage(image, location: coordinate)
+                        Task { @MainActor in
+                            self.showSavedToast = true
+                        }
                     } catch {
                         print("Error saving image: \(error)")
                         if let error = error as? PhotoLibrary.PhotoLibraryError, error == .authorizationDenied {
@@ -78,6 +83,9 @@ struct SnapshotView: View {
             }
         } message: {
             Text("请在设置中开启相册权限")
+        }
+        .toast(isPresenting: $showSavedToast) {
+            AlertToast(type: .regular, title: "保存成功")
         }
         
     }
