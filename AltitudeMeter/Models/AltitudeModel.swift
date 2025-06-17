@@ -12,7 +12,7 @@ import SwiftUI
 import SwiftSunriseSunset
 
 // 经纬度格式化工具类
-class CoordinateFormatter {
+fileprivate class CoordinateFormatter {
     // 将十进制经纬度转换为度分秒字符串
     static func formatToDMS(latitude: Double, longitude: Double) -> (String, String) {
         let latitudeStr = formatCoordinate(value: latitude, isLatitude: true)
@@ -64,15 +64,11 @@ extension CLLocationCoordinate2D {
     }
 }
 
-
-
 enum AltitudeUnitType : String, CaseIterable, Identifiable, Codable {
     case meter
     case feet
     var id: String { self.rawValue }
 }
-
-
 
 enum GpsDisplayType: String, CaseIterable, Identifiable, Codable {
     //度分秒
@@ -193,13 +189,16 @@ extension AltitudeDataModel {
         case .meter:
             return String(format: "%.0f m", altitude)
         case .feet:
-            return String(format: "%.0f ft", altitude * 3.28084)
+            return String(format: "%.0f ft", altitude / 0.3048) // 1米 = 3.28084英尺
         }
     }
     
     var speed: String {
         guard let speed = altitudeModel.speed else {
             return "N/A"
+        }
+        if speed > 1000 {
+            return String(format: "%.1f km/h", speed / 1000.0) // 速度转换为千米每小时
         }
         return String(format: "%.2f m/s", speed)
     }

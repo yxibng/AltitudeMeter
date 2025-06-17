@@ -116,7 +116,7 @@ struct Compass<Content: View>: View {
                 makeContent()
                     .frame(width: centerCricleSize(geometry: geometry).width,
                            height: centerCricleSize(geometry: geometry).height)
-                    .overlay {
+                    .background {
                         Circle().fill(
                             LinearGradient(
                                 gradient: Gradient(colors: [.orange.opacity(0.5),

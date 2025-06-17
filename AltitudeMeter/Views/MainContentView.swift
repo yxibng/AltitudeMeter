@@ -38,7 +38,7 @@ struct MainContentView: View {
 
     private var compass: some View {
         Compass(degrees: dataModel.degrees) {
-            VStack(alignment: .center) {
+            VStack(alignment: .center, spacing: 0) {
                 Text("当前海拔")
                     .font(.system(size: 30, weight: .bold))
                     .foregroundColor(.white)
@@ -48,7 +48,7 @@ struct MainContentView: View {
                     .lineLimit(1)
                     .foregroundColor(.white)
                 Text("当前速度\(dataModel.speed)")
-                    .font(.system(size: 30, weight: .bold))
+                    .font(.system(size: 20, weight: .bold))
                     .minimumScaleFactor(0.1)
                     .lineLimit(1)
                     .foregroundColor(.white)
@@ -62,38 +62,36 @@ struct MainContentView: View {
     }
     
     private var contentView: some View {
-        ZStack {
+        VStack {
+            Spacer()
+            topContent
+            Spacer()
+            compass
+                .padding()
+            bottomContent
+            Spacer()
+        }.background {
             gradientBackground.edgesIgnoringSafeArea(.all)
-            VStack {
-                Spacer()
-                topContent
-                Spacer()
-                compass
-                    .padding()
-                bottomContent
-                Spacer()
-            }
-            .toolbar {
-                ToolbarItem(placement:.navigationBarLeading) {
-                    Button {
-                        showSettings.toggle()
-                    } label: {
-                        Image(systemName: "gearshape")
-                            .tint(.white)
-                    }
+        }
+        .toolbar {
+            ToolbarItem(placement:.navigationBarLeading) {
+                Button {
+                    showSettings.toggle()
+                } label: {
+                    Image(systemName: "gearshape")
+                        .tint(.white)
                 }
-                
-                ToolbarItem(placement:.navigationBarTrailing) {
-                    Button {
-                        showCamera.toggle()
-                    } label: {
-                        Image(systemName: "camera")
-                            .tint(.white)
-                    }
+            }
+            
+            ToolbarItem(placement:.navigationBarTrailing) {
+                Button {
+                    showCamera.toggle()
+                } label: {
+                    Image(systemName: "camera")
+                        .tint(.white)
                 }
             }
         }
-            
     }
         
     

@@ -16,8 +16,6 @@ class PhotoLibrary {
         case authorizationDenied
         case saveFailed
     }
-            
-    
 
     static func checkAuthorization() async -> Bool {
         switch PHPhotoLibrary.authorizationStatus(for: .readWrite) {
