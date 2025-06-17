@@ -8,15 +8,16 @@
 import SwiftUI
 
 struct SettingsView: View {
-    
+
     @State private var altitudeUnit: AltitudeUnitType = .meter
     @State private var gpsDisplayType: GpsDisplayType = .dms
     @State private var pressureUnit: PressureUnitType = .kPa
-    
+
     @ObservedObject var dataModel: AltitudeDataModel
 
     @ViewBuilder
-    private func makeLeadingView(imageName: String, title: String) -> some View {
+    private func makeLeadingView(imageName: String, title: String) -> some View
+    {
         HStack {
             ZStack {
                 Circle().fill(Color.gray.opacity(0.2))
@@ -26,13 +27,16 @@ struct SettingsView: View {
             Text(title)
         }
     }
-    
+
     var list: some View {
         List {
             HStack {
                 makeLeadingView(imageName: "compass.drawing", title: "海拔")
                 Spacer()
-                Picker("Select an option", selection: $dataModel.altitudeModel.preferences.altitudeUnit) {
+                Picker(
+                    "Select an option",
+                    selection: $dataModel.altitudeModel.preferences.altitudeUnit
+                ) {
                     ForEach(AltitudeUnitType.allCases) { option in
                         Text(option.rawValue).tag(option)
                     }
@@ -40,11 +44,15 @@ struct SettingsView: View {
                 .fixedSize()
                 .pickerStyle(.segmented)
             }
-            
+
             HStack {
                 makeLeadingView(imageName: "safari", title: "GPS")
                 Spacer()
-                Picker("Select an option", selection: $dataModel.altitudeModel.preferences.gpsDisplayType) {
+                Picker(
+                    "Select an option",
+                    selection: $dataModel.altitudeModel.preferences
+                        .gpsDisplayType
+                ) {
                     ForEach(GpsDisplayType.allCases) { option in
                         Text(option.rawValue).tag(option)
                     }
@@ -52,11 +60,14 @@ struct SettingsView: View {
                 .fixedSize()
                 .pickerStyle(.segmented)
             }
-            
+
             HStack {
                 makeLeadingView(imageName: "barometer", title: "气压")
                 Spacer()
-                Picker("Select an option", selection: $dataModel.altitudeModel.preferences.pressureUnit) {
+                Picker(
+                    "Select an option",
+                    selection: $dataModel.altitudeModel.preferences.pressureUnit
+                ) {
                     ForEach(PressureUnitType.allCases) { option in
                         Text(option.rawValue).tag(option)
                     }
@@ -64,11 +75,18 @@ struct SettingsView: View {
                 .fixedSize()
                 .pickerStyle(.segmented)
             }
-            
+
             HStack {
-                makeLeadingView(imageName: "inset.filled.bottomthird.square", title: "底部显示")
+                makeLeadingView(
+                    imageName: "inset.filled.bottomthird.square",
+                    title: "底部显示"
+                )
                 Spacer()
-                Picker("Select an option", selection: $dataModel.altitudeModel.preferences.bottomContentType) {
+                Picker(
+                    "Select an option",
+                    selection: $dataModel.altitudeModel.preferences
+                        .bottomContentType
+                ) {
                     ForEach(BottomConentType.allCases) { option in
                         Text(option.title).tag(option)
                     }
@@ -76,18 +94,20 @@ struct SettingsView: View {
                 .fixedSize()
                 .pickerStyle(.segmented)
             }
-            
+
             HStack {
                 makeLeadingView(imageName: "bookmark.circle", title: "版本号")
                 Spacer()
-                Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown")
+                Text(
+                    Bundle.main.infoDictionary?["CFBundleShortVersionString"]
+                        as? String ?? "Unknown"
+                )
                 .fixedSize()
             }
-            
+
         }
     }
-    
-    
+
     var body: some View {
         NavigationView {
             VStack {

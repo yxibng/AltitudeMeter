@@ -8,24 +8,25 @@
 import SwiftUI
 
 struct MainContentView: View {
-    
+
     @State private var showSettings = false
     @State private var showCamera = false
     @State private var degree: Double = 0
     @State private var showNoLocationAuthAlert = false
     @State private var showNoCMAuthAlert = false
-    
+
     @StateObject private var dataModel = AltitudeDataModel()
-    
-    
+
     private var gradientBackground: some View {
         LinearGradient(
-            gradient: Gradient(colors: [.orange.opacity(0.5), .blue.opacity(0.5)]),
+            gradient: Gradient(colors: [
+                .orange.opacity(0.5), .blue.opacity(0.5),
+            ]),
             startPoint: .top,
             endPoint: .bottom
         )
     }
-        
+
     private var topContent: some View {
         VStack {
             Text(dataModel.pressure)
@@ -34,7 +35,6 @@ struct MainContentView: View {
                 .foregroundColor(.white)
         }
     }
-    
 
     private var compass: some View {
         Compass(degrees: dataModel.degrees) {
@@ -60,7 +60,7 @@ struct MainContentView: View {
         Text(dataModel.bottomContent)
             .foregroundColor(.white)
     }
-    
+
     private var contentView: some View {
         VStack {
             Spacer()
@@ -74,7 +74,7 @@ struct MainContentView: View {
             gradientBackground.edgesIgnoringSafeArea(.all)
         }
         .toolbar {
-            ToolbarItem(placement:.navigationBarLeading) {
+            ToolbarItem(placement: .navigationBarLeading) {
                 Button {
                     showSettings.toggle()
                 } label: {
@@ -82,8 +82,8 @@ struct MainContentView: View {
                         .tint(.white)
                 }
             }
-            
-            ToolbarItem(placement:.navigationBarTrailing) {
+
+            ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
                     showCamera.toggle()
                 } label: {
@@ -93,17 +93,15 @@ struct MainContentView: View {
             }
         }
     }
-        
-    
-    
+
     var body: some View {
-        
+
         NavigationView {
             contentView
                 .navigationTitle("Alitude Meter")
                 .navigationBarTitleDisplayMode(.inline)
                 .preferredColorScheme(.dark)
-            
+
         }
         .sheet(isPresented: $showSettings) {
             SettingsView(dataModel: dataModel)
@@ -111,7 +109,7 @@ struct MainContentView: View {
         .fullScreenCover(isPresented: $showCamera) {
             CameraView(altitudeDataMode: dataModel)
         }.alert("没有定位权限", isPresented: $showNoLocationAuthAlert) {
-            Button("取消", role: .cancel) { }
+            Button("取消", role: .cancel) {}
             Button("取消") {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
@@ -124,7 +122,7 @@ struct MainContentView: View {
         }.onChange(of: dataModel.showNoCMAuthAlert) { newValue in
             showNoCMAuthAlert = newValue
         }.alert("没有运动与健身权限，无法获取当前气压和速度", isPresented: $showNoCMAuthAlert) {
-            Button("取消", role: .cancel) { }
+            Button("取消", role: .cancel) {}
             Button("去设置") {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
@@ -135,7 +133,6 @@ struct MainContentView: View {
         }
     }
 }
-
 
 #Preview {
     MainContentView()

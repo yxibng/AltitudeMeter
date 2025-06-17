@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-
-
 struct CameraPreview: View {
     @Binding var videoFrame: Image?
     var body: some View {
@@ -17,8 +15,10 @@ struct CameraPreview: View {
                 image
                     .resizable()
                     .scaledToFill()
-                    .frame(width: geometry.size.width,
-                           height: geometry.size.height)
+                    .frame(
+                        width: geometry.size.width,
+                        height: geometry.size.height
+                    )
             }
         }
     }
@@ -32,22 +32,23 @@ struct CameraView: View {
     @State var snpashot: UIImage? = nil
     @State var showSnapshot = false
     @State var showNoAuthAlert = false
-    
+
     struct Layout {
         static let bottomHeight: CGFloat = 62
         static let buttonWidth: CGFloat = 32
         static let takePhotoButtonWidth: CGFloat = 50
         static let takePhotoButtonInnerWidth: CGFloat = 40
     }
-    
-    
-    func makeButton(imageName: String, action: @escaping () -> Void) -> some View {
+
+    func makeButton(imageName: String, action: @escaping () -> Void)
+        -> some View
+    {
         Button(action: action) {
             Image(systemName: imageName)
                 .resizable()
                 .scaledToFit()
         }.tint(.white)
-        .frame(height: Layout.buttonWidth)
+            .frame(height: Layout.buttonWidth)
     }
 
     var bottomView: some View {
@@ -55,7 +56,7 @@ struct CameraView: View {
             makeButton(imageName: "arrowshape.turn.up.backward") {
                 dismiss()
             }
- 
+
             Spacer()
             Button {
                 let snapshot = previewWithLabels.asImage(size: snapshotSize)
@@ -65,10 +66,16 @@ struct CameraView: View {
                 ZStack {
                     Circle()
                         .strokeBorder(.white, lineWidth: 3)
-                        .frame(width: Layout.takePhotoButtonWidth, height: Layout.takePhotoButtonWidth)
+                        .frame(
+                            width: Layout.takePhotoButtonWidth,
+                            height: Layout.takePhotoButtonWidth
+                        )
                     Circle()
                         .fill(.white)
-                        .frame(width: Layout.takePhotoButtonInnerWidth, height: Layout.takePhotoButtonInnerWidth)
+                        .frame(
+                            width: Layout.takePhotoButtonInnerWidth,
+                            height: Layout.takePhotoButtonInnerWidth
+                        )
                 }
             }
             Spacer()
@@ -81,10 +88,12 @@ struct CameraView: View {
 
     var snapshotSize: CGSize {
         let width = UIScreen.main.bounds.size.width
-        let height =  UIScreen.main.bounds.size.height - Layout.bottomHeight - UIScreen.safeAreaInsets.bottom - UIScreen.safeAreaInsets.top
+        let height =
+            UIScreen.main.bounds.size.height - Layout.bottomHeight
+            - UIScreen.safeAreaInsets.bottom - UIScreen.safeAreaInsets.top
         return CGSize(width: width, height: height)
     }
-    
+
     var previewWithLabels: some View {
         GeometryReader { geometry in
             ZStack {
@@ -95,13 +104,13 @@ struct CameraView: View {
                         VStack(alignment: .leading) {
                             Text("海拔：\(altitudeDataMode.altitude)")
                                 .foregroundColor(.white)
-                            
+
                             Text("气压: \(altitudeDataMode.pressure)")
                                 .foregroundColor(.white)
-                            
+
                             Text(altitudeDataMode.coordinate)
                                 .foregroundColor(.white)
-                            
+
                             Text(altitudeDataMode.geocodeLocation)
                                 .foregroundColor(.white)
                         }
@@ -113,29 +122,32 @@ struct CameraView: View {
             }
         }.background(Color.black)
     }
-    
-    
+
     var body: some View {
         LazyVStack(spacing: 0) {
             VStack(spacing: 0) {
                 Spacer()
                     .frame(height: UIScreen.safeAreaInsets.top)
                 previewWithLabels
-                    .frame(width: UIScreen.screenSize.width,
-                            height: UIScreen.screenSize.height - Layout.bottomHeight - UIScreen.safeAreaInsets.top - UIScreen.safeAreaInsets.bottom)
+                    .frame(
+                        width: UIScreen.screenSize.width,
+                        height: UIScreen.screenSize.height - Layout.bottomHeight
+                            - UIScreen.safeAreaInsets.top
+                            - UIScreen.safeAreaInsets.bottom
+                    )
                     .background(Color.gray)
                     .clipped()
-                    .onAppear() {
+                    .onAppear {
                         print("CameraView onAppear")
                         Task {
                             await cameraViewModel.camera.start()
                         }
                     }
-                    .onDisappear() {
+                    .onDisappear {
                         print("CameraView onDisappear")
                         cameraViewModel.camera.stop()
                     }
-                
+
                 bottomView
                     .frame(maxWidth: .infinity, maxHeight: Layout.bottomHeight)
                 Spacer()
@@ -146,14 +158,17 @@ struct CameraView: View {
         .ignoresSafeArea(edges: [.top, .bottom])
         .fullScreenCover(isPresented: $showSnapshot) {
             if let snapshot = snpashot {
-                SnapshotView(image: snapshot, coordinate: altitudeDataMode.altitudeModel.location)
+                SnapshotView(
+                    image: snapshot,
+                    coordinate: altitudeDataMode.altitudeModel.location
+                )
             } else {
                 Text("Snapshot not available")
             }
         }.onChange(of: cameraViewModel.showNoAuthorizationAlert) { newValue in
             showNoAuthAlert = newValue
         }.alert("没有相机权限", isPresented: $showNoAuthAlert) {
-            Button("取消", role: .cancel) { }
+            Button("取消", role: .cancel) {}
             Button("去设置") {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)

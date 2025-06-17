@@ -5,16 +5,15 @@
 //  Created by yxibng on 2025/6/11.
 //
 
-
-import SwiftUI
 import AVFoundation
+import SwiftUI
 
 class CameraViewModel: ObservableObject {
     deinit {
         camera.stop()
         print("CameraViewModel deinitialized")
     }
-    
+
     let camera = Camera()
     @Published var videoFrame: Image?
     @Published var showNoAuthorizationAlert = false
@@ -23,8 +22,10 @@ class CameraViewModel: ObservableObject {
             await handleCameraPreviews()
         }
     }
-    func handleCameraPreviews() async {        
-        let authorizationStatus = await AVCaptureDevice.requestAccess(for: .video)
+    func handleCameraPreviews() async {
+        let authorizationStatus = await AVCaptureDevice.requestAccess(
+            for: .video
+        )
         Task { @MainActor in
             self.showNoAuthorizationAlert = !authorizationStatus
         }
@@ -39,24 +40,25 @@ class CameraViewModel: ObservableObject {
     }
 }
 
-fileprivate struct PhotoData {
+private struct PhotoData {
     var thumbnailImage: Image
     var thumbnailSize: (width: Int, height: Int)
     var imageData: Data
     var imageSize: (width: Int, height: Int)
 }
 
-fileprivate extension CIImage {
-    var image: Image? {
+extension CIImage {
+    fileprivate var image: Image? {
         let ciContext = CIContext()
-        guard let cgImage = ciContext.createCGImage(self, from: self.extent) else { return nil }
+        guard let cgImage = ciContext.createCGImage(self, from: self.extent)
+        else { return nil }
         return Image(decorative: cgImage, scale: 1, orientation: .up)
     }
 }
 
-fileprivate extension Image.Orientation {
+extension Image.Orientation {
 
-    init(_ cgImageOrientation: CGImagePropertyOrientation) {
+    fileprivate init(_ cgImageOrientation: CGImagePropertyOrientation) {
         switch cgImageOrientation {
         case .up: self = .up
         case .upMirrored: self = .upMirrored

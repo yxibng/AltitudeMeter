@@ -5,13 +5,12 @@
 //  Created by yxibng on 2025/6/12.
 //
 
-
 import Photos
-import os.log
 import UIKit
+import os.log
 
 class PhotoLibrary {
-    
+
     enum PhotoLibraryError: Error {
         case authorizationDenied
         case saveFailed
@@ -24,7 +23,8 @@ class PhotoLibrary {
             return true
         case .notDetermined:
             logger.debug("Photo library access not determined.")
-            return await PHPhotoLibrary.requestAuthorization(for: .readWrite) == .authorized
+            return await PHPhotoLibrary.requestAuthorization(for: .readWrite)
+                == .authorized
         case .denied:
             logger.debug("Photo library access denied.")
             return false
@@ -39,22 +39,37 @@ class PhotoLibrary {
         }
     }
 
-    static func saveImage(_ image: UIImage, location: CLLocationCoordinate2D?) async throws  {
-        if await PHPhotoLibrary.requestAuthorization(for: .readWrite) == .authorized {
+    static func saveImage(_ image: UIImage, location: CLLocationCoordinate2D?)
+        async throws
+    {
+        if await PHPhotoLibrary.requestAuthorization(for: .readWrite)
+            == .authorized
+        {
             try await withCheckedThrowingContinuation { continuation in
-                PHPhotoLibrary.shared().performChanges({
-                    let creationRequest = PHAssetChangeRequest.creationRequestForAsset(from: image)
-                    creationRequest.creationDate = Date()
-                    if let location {
-                        creationRequest.location = CLLocation(latitude: location.latitude, longitude: location.longitude)
+                PHPhotoLibrary.shared().performChanges(
+                    {
+                        let creationRequest =
+                            PHAssetChangeRequest.creationRequestForAsset(
+                                from: image
+                            )
+                        creationRequest.creationDate = Date()
+                        if let location {
+                            creationRequest.location = CLLocation(
+                                latitude: location.latitude,
+                                longitude: location.longitude
+                            )
+                        }
+                    },
+                    completionHandler: { success, error in
+                        if success {
+                            continuation.resume()
+                        } else {
+                            continuation.resume(
+                                throwing: PhotoLibraryError.saveFailed
+                            )
+                        }
                     }
-                }, completionHandler: { success, error in
-                    if success {
-                        continuation.resume()
-                    } else {
-                        continuation.resume(throwing: PhotoLibraryError.saveFailed)
-                    }
-                })
+                )
             }
         } else {
             throw PhotoLibraryError.authorizationDenied
@@ -62,5 +77,7 @@ class PhotoLibrary {
     }
 }
 
-fileprivate let logger = Logger(subsystem: "com.apple.swiftplaygroundscontent.capturingphotos", category: "PhotoLibrary")
-
+private let logger = Logger(
+    subsystem: "com.apple.swiftplaygroundscontent.capturingphotos",
+    category: "PhotoLibrary"
+)

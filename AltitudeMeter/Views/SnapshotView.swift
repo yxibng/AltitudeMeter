@@ -5,37 +5,42 @@
 //  Created by yxibng on 2025/6/12.
 //
 
-import SwiftUI
-import CoreLocation
 import AlertToast
+import CoreLocation
+import SwiftUI
 
 struct SnapshotView: View {
-    
+
     struct Layout {
         static let bottomHeight: CGFloat = 62
         static let buttonWidth: CGFloat = 32
         static let saveButtonWidth: CGFloat = 50
         static let space: CGFloat = 16
     }
-    
+
     @Environment(\.dismiss) private var dismiss
     @State var showNoAuthAlert = false
     @State var showSavedToast = false
     @State var showShareSheet = false
-    
+
     var bottomView: some View {
         ZStack {
             Button {
                 //save
                 Task {
                     do {
-                        try await PhotoLibrary.saveImage(image, location: coordinate)
+                        try await PhotoLibrary.saveImage(
+                            image,
+                            location: coordinate
+                        )
                         Task { @MainActor in
                             self.showSavedToast = true
                         }
                     } catch {
                         print("Error saving image: \(error)")
-                        if let error = error as? PhotoLibrary.PhotoLibraryError, error == .authorizationDenied {
+                        if let error = error as? PhotoLibrary.PhotoLibraryError,
+                            error == .authorizationDenied
+                        {
                             Task { @MainActor in
                                 showNoAuthAlert = true
                             }
@@ -47,8 +52,11 @@ struct SnapshotView: View {
                     .resizable()
                     .scaledToFit()
                     .tint(.white)
-                   
-            } .frame(width: Layout.saveButtonWidth, height: Layout.saveButtonWidth)
+
+            }.frame(
+                width: Layout.saveButtonWidth,
+                height: Layout.saveButtonWidth
+            )
 
             HStack {
                 Button {
@@ -58,12 +66,12 @@ struct SnapshotView: View {
                         .resizable()
                         .scaledToFit()
                         .tint(.white)
-                        
+
                 }
                 .frame(width: Layout.buttonWidth, height: Layout.buttonWidth)
-                
+
                 Spacer()
-                
+
                 Button {
                     showShareSheet.toggle()
                 } label: {
@@ -80,7 +88,7 @@ struct SnapshotView: View {
     var image: UIImage
     var coordinate: CLLocationCoordinate2D?
     var body: some View {
-        
+
         VStack(spacing: 0) {
             Spacer().frame(height: UIScreen.safeAreaInsets.top)
             Image(uiImage: image).resizable().scaledToFit()
@@ -89,22 +97,27 @@ struct SnapshotView: View {
                 .frame(maxWidth: .infinity, maxHeight: Layout.bottomHeight)
             Spacer().frame(height: UIScreen.safeAreaInsets.bottom)
         }.background(Color.black)
-        .ignoresSafeArea(edges: [.top, .bottom])
-        .alert("没有相册权限", isPresented: $showNoAuthAlert) {
-            Button("取消", role: .cancel) { }
-            Button("去设置") {
-                if let url = URL(string: UIApplication.openSettingsURLString) {
-                    UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            .ignoresSafeArea(edges: [.top, .bottom])
+            .alert("没有相册权限", isPresented: $showNoAuthAlert) {
+                Button("取消", role: .cancel) {}
+                Button("去设置") {
+                    if let url = URL(
+                        string: UIApplication.openSettingsURLString
+                    ) {
+                        UIApplication.shared.open(
+                            url,
+                            options: [:],
+                            completionHandler: nil
+                        )
+                    }
                 }
+            } message: {
+                Text("请在设置中开启相册权限")
             }
-        } message: {
-            Text("请在设置中开启相册权限")
-        }
-        .toast(isPresenting: $showSavedToast) {
-            AlertToast(type: .regular, title: "保存成功")
-        }
-        .shareSheet(show: $showShareSheet, items: [image])
-        
+            .toast(isPresenting: $showSavedToast) {
+                AlertToast(type: .regular, title: "保存成功")
+            }
+            .shareSheet(show: $showShareSheet, items: [image])
+
     }
 }
-
