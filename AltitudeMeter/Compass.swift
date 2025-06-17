@@ -69,6 +69,8 @@ struct Compass<Content: View>: View {
         return centerCricleSize(geometry: geometry).height / 2 + trianglePadding
     }
 
+    @State private var isAnimating = false
+    
     var body: some View {
         
         GeometryReader { geometry in
@@ -78,6 +80,13 @@ struct Compass<Content: View>: View {
                     .blur(radius: 0.8)
                     .frame(width: min(geometry.size.width, geometry.size.height),
                            height: min(geometry.size.width, geometry.size.height))
+                    .scaleEffect(isAnimating ? 1.05 : 1.0)
+                    .onAppear {
+                        withAnimation(Animation.easeInOut(duration: 2.0).repeatForever(autoreverses: true), {
+                            isAnimating.toggle()
+                        })
+                    }
+
                 VStack {
                     
                     Triangle(radius: triangleRadius(geometry: geometry))
