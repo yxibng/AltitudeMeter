@@ -11,6 +11,10 @@ import UIKit
 import os.log
 
 class Camera: NSObject {
+    
+    deinit {
+        print("Camera deinitialized")
+    }
     private let captureSession = AVCaptureSession()
     private var isCaptureSessionConfigured = false
     private var deviceInput: AVCaptureDeviceInput?

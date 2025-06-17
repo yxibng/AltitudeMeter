@@ -10,6 +10,11 @@ import SwiftUI
 import AVFoundation
 
 class CameraViewModel: ObservableObject {
+    deinit {
+        camera.stop()
+        print("CameraViewModel deinitialized")
+    }
+    
     let camera = Camera()
     @Published var videoFrame: Image?
     @Published var showNoAuthorizationAlert = false

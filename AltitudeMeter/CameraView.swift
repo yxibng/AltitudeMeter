@@ -30,6 +30,11 @@ extension UIScreen {
             .filter({$0.isKeyWindow}).first
         return keyWindow?.safeAreaInsets ?? .zero
     }
+    
+    static var screenSize: CGSize {
+        return UIScreen.main.bounds.size
+    }
+    
 }
 
 extension View {
@@ -59,6 +64,7 @@ struct CameraPreview: View {
 struct CameraView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var altitudeDataMode: AltitudeDataModel
+    @StateObject var cameraViewModel = CameraViewModel()
 
     @State var snpashot: UIImage? = nil
     @State var showSnapshot = false
@@ -110,8 +116,6 @@ struct CameraView: View {
         .padding(.horizontal, 32)
     }
 
-    @StateObject var cameraViewModel = CameraViewModel()
-    
     var snapshotSize: CGSize {
         let width = UIScreen.main.bounds.size.width
         let height =  UIScreen.main.bounds.size.height - Layout.bottomHeight - UIScreen.safeAreaInsets.bottom - UIScreen.safeAreaInsets.top
@@ -122,9 +126,6 @@ struct CameraView: View {
         GeometryReader { geometry in
             ZStack {
                 CameraPreview(videoFrame: $cameraViewModel.videoFrame)
-                    .task {
-                    await cameraViewModel.camera.start()
-                }
                 VStack(alignment: .leading) {
                     Spacer()
                     HStack(alignment: .bottom, spacing: 0) {
@@ -147,21 +148,38 @@ struct CameraView: View {
                     .background(.ultraThinMaterial)
                 }
             }
-        }
+        }.background(Color.black)
     }
     
     
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer()
-                .frame(height: UIScreen.safeAreaInsets.top)
-            previewWithLabels
-                .background(Color.gray).clipped()
-            bottomView
-                .frame(maxWidth: .infinity, maxHeight: Layout.bottomHeight)
-            Spacer()
-                .frame(height: UIScreen.safeAreaInsets.bottom)
-        }.background(Color.black)
+        LazyVStack(spacing: 0) {
+            VStack(spacing: 0) {
+                Spacer()
+                    .frame(height: UIScreen.safeAreaInsets.top)
+                previewWithLabels
+                    .frame(width: UIScreen.screenSize.width,
+                            height: UIScreen.screenSize.height - Layout.bottomHeight - UIScreen.safeAreaInsets.top - UIScreen.safeAreaInsets.bottom)
+                    .background(Color.gray)
+                    .clipped()
+                    .onAppear() {
+                        print("CameraView onAppear")
+                        Task {
+                            await cameraViewModel.camera.start()
+                        }
+                    }
+                    .onDisappear() {
+                        print("CameraView onDisappear")
+                        cameraViewModel.camera.stop()
+                    }
+                
+                bottomView
+                    .frame(maxWidth: .infinity, maxHeight: Layout.bottomHeight)
+                Spacer()
+                    .frame(height: UIScreen.safeAreaInsets.bottom)
+            }
+        }
+        .background(Color.black)
         .ignoresSafeArea(edges: [.top, .bottom])
         .fullScreenCover(isPresented: $showSnapshot) {
             if let snapshot = snpashot {
