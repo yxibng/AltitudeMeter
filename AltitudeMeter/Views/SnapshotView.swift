@@ -21,6 +21,7 @@ struct SnapshotView: View {
     @Environment(\.dismiss) private var dismiss
     @State var showNoAuthAlert = false
     @State var showSavedToast = false
+    @State var showShareSheet = false
     
     var bottomView: some View {
         ZStack {
@@ -49,16 +50,31 @@ struct SnapshotView: View {
                    
             } .frame(width: Layout.saveButtonWidth, height: Layout.saveButtonWidth)
 
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "arrowshape.turn.up.backward")
-                    .resizable()
-                    .scaledToFit()
-                    .tint(.white)
-                    
-            }.frame(width: Layout.buttonWidth, height: Layout.buttonWidth)
-            .offset(x: -(Layout.space + Layout.saveButtonWidth/2 + Layout.buttonWidth/2))
+            HStack {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "arrowshape.turn.up.backward")
+                        .resizable()
+                        .scaledToFit()
+                        .tint(.white)
+                        
+                }
+                .frame(width: Layout.buttonWidth, height: Layout.buttonWidth)
+                
+                Spacer()
+                
+                Button {
+                    showShareSheet.toggle()
+                } label: {
+                    Image(systemName: "square.and.arrow.up.circle")
+                        .resizable()
+                        .scaledToFit()
+                        .tint(.white)
+                }
+                .frame(width: Layout.buttonWidth, height: Layout.buttonWidth)
+            }
+            .padding(EdgeInsets(top: 10, leading: 32, bottom: 0, trailing: 32))
         }
     }
     var image: UIImage
@@ -87,6 +103,7 @@ struct SnapshotView: View {
         .toast(isPresenting: $showSavedToast) {
             AlertToast(type: .regular, title: "保存成功")
         }
+        .shareSheet(show: $showShareSheet, items: [image])
         
     }
 }

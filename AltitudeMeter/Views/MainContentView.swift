@@ -98,8 +98,12 @@ struct MainContentView: View {
     
     var body: some View {
         
-        CustomNavigationView(title: "Altitude Meter") {
+        NavigationView {
             contentView
+                .navigationTitle("Alitude Meter")
+                .navigationBarTitleDisplayMode(.inline)
+                .preferredColorScheme(.dark)
+            
         }
         .sheet(isPresented: $showSettings) {
             SettingsView(dataModel: dataModel)

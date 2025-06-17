@@ -77,6 +77,13 @@ struct SettingsView: View {
                 .pickerStyle(.segmented)
             }
             
+            HStack {
+                makeLeadingView(imageName: "bookmark.circle", title: "版本号")
+                Spacer()
+                Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown")
+                .fixedSize()
+            }
+            
         }
     }
     
