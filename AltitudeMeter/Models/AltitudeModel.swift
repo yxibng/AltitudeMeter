@@ -200,15 +200,39 @@ extension AltitudeDataModel {
         return String(format: "海拔精度 %.2f m", accuracy)
     }
 
+    var altitudePrompt: AttributedString {
+        var prompt: AttributedString {
+            var prompt = AttributedString("当前海拔")
+            prompt.font = .system(size: 30, weight: .bold)
+            prompt.foregroundColor = .white
+            return prompt
+        }
+
+        var unit: AttributedString {
+            var unit: AttributedString!
+
+            switch altitudeModel.preferences.altitudeUnit {
+            case .meter:
+                unit = AttributedString("(m)")
+            case .feet:
+                unit = AttributedString("(ft)")
+            }
+            unit.font = .system(size: 20, weight: .bold)
+            unit.foregroundColor = .white
+            return unit
+        }
+        return prompt + unit
+    }
+
     var altitude: String {
         guard let altitude = altitudeModel.altitude else {
             return "N/A"
         }
         switch altitudeModel.preferences.altitudeUnit {
         case .meter:
-            return String(format: "%.0f m", altitude)
+            return String(format: "%.1f", altitude)
         case .feet:
-            return String(format: "%.0f ft", altitude / 0.3048)  // 1米 = 3.28084英尺
+            return String(format: "%.1f", altitude / 0.3048)  // 1米 = 3.28084英尺
         }
     }
 
