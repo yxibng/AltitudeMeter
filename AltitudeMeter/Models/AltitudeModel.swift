@@ -82,6 +82,14 @@ enum AltitudeUnitType: String, CaseIterable, Identifiable, Codable {
     case meter
     case feet
     var id: String { self.rawValue }
+    var title: String {
+        switch self {
+        case .meter:
+            return "m"
+        case .feet:
+            return "ft"
+        }
+    }
 }
 
 enum GpsDisplayType: String, CaseIterable, Identifiable, Codable {
@@ -255,7 +263,7 @@ extension AltitudeDataModel {
         }
         switch altitudeModel.preferences.gpsDisplayType {
         case .dms:
-            return location.latitudeDMS + "\n" + location.longitudeDMS
+            return location.latitudeDMS + " " + location.longitudeDMS
         case .decimal:
             return String(
                 format: "%.6f, %.6f",

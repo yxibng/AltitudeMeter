@@ -8,9 +8,9 @@
 import SwiftUI
 
 extension UIView {
-    func asImage() -> UIImage {
+    func asImage(scale: CGFloat) -> UIImage {
         let format = UIGraphicsImageRendererFormat()
-        format.scale = UIScreen.main.scale
+        format.scale = scale
         return UIGraphicsImageRenderer(
             size: self.layer.bounds.size,
             format: format
@@ -38,12 +38,25 @@ extension UIScreen {
 }
 
 extension View {
-    func asImage(size: CGSize) -> UIImage {
+    func asImage(size: CGSize, scale: CGFloat = UIScreen.main.scale) -> UIImage {
         let controller = UIHostingController(
             rootView: self.edgesIgnoringSafeArea(.all)
         )
         controller.view.bounds = CGRect(origin: .zero, size: size)
-        let image = controller.view.asImage()
+        controller.view.backgroundColor = .clear
+        let image = controller.view.asImage(scale: scale)
         return image
     }
+}
+
+
+extension UIImage {
+    func asCIImage() -> CIImage {
+        if let ciImage = CIImage(image: self) {
+            return ciImage
+        } else {
+            return CIImage(cgImage: self.cgImage!)
+        }
+    }
+        
 }

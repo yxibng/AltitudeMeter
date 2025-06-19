@@ -9,6 +9,8 @@ import AVFoundation
 import SwiftUI
 
 class CameraViewModel: ObservableObject {
+    static let previewImageContext = CIContext()
+    
     deinit {
         camera.stop()
         print("CameraViewModel deinitialized")
@@ -16,10 +18,14 @@ class CameraViewModel: ObservableObject {
 
     let camera = Camera()
     @Published var videoFrame: Image?
+    @Published var photo: CIImage?
     @Published var showNoAuthorizationAlert = false
     init() {
         Task {
             await handleCameraPreviews()
+        }
+        Task {
+            await handleCameraPhotos()
         }
     }
     func handleCameraPreviews() async {
@@ -38,6 +44,16 @@ class CameraViewModel: ObservableObject {
             }
         }
     }
+    
+    func handleCameraPhotos() async {
+        let photoStream = camera.photoStream
+        for await photo in photoStream {
+            Task {
+                @MainActor in
+                self.photo = photo.ciImage
+            }
+        }
+    }
 }
 
 private struct PhotoData {
@@ -49,7 +65,7 @@ private struct PhotoData {
 
 extension CIImage {
     fileprivate var image: Image? {
-        let ciContext = CIContext()
+        let ciContext = CameraViewModel.previewImageContext
         guard let cgImage = ciContext.createCGImage(self, from: self.extent)
         else { return nil }
         return Image(decorative: cgImage, scale: 1, orientation: .up)

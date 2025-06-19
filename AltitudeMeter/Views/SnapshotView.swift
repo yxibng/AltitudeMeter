@@ -88,14 +88,17 @@ struct SnapshotView: View {
     var image: UIImage
     var coordinate: CLLocationCoordinate2D?
     var body: some View {
-
         VStack(spacing: 0) {
-            Spacer().frame(height: UIScreen.safeAreaInsets.top)
-            Image(uiImage: image).resizable().scaledToFit()
-                .background(Color.red).clipped()
+            Spacer()
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFill()
+                .aspectRatio(Theme.imageAspectRatio, contentMode: .fit)
+                .background(Color.red)
+                .clipped()
             bottomView
                 .frame(maxWidth: .infinity, maxHeight: Layout.bottomHeight)
-            Spacer().frame(height: UIScreen.safeAreaInsets.bottom)
+            Spacer()
         }.background(Color.black)
             .ignoresSafeArea(edges: [.top, .bottom])
             .alert("没有相册权限", isPresented: $showNoAuthAlert) {
