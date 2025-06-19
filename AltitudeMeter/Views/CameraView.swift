@@ -9,6 +9,8 @@ import SwiftUI
 
 enum Theme {
     static let imageAspectRatio: CGFloat = 3 / 4.0
+    static let maxZoomFactor: CGFloat = 5.0
+    static let minZoomFactor: CGFloat = 1.0
 }
 
 struct CameraPreview: View {
@@ -144,6 +146,28 @@ struct CameraView: View {
         .background(Color.black)
     }
     
+    @State private var zoomFactor: CGFloat = 1.0
+    @State private var lastScale: CGFloat = 1.0
+    
+    var magnificationGesture: some Gesture {
+        MagnificationGesture()
+            .onChanged { newScale in
+                // 计算从上次状态到现在的缩放变化
+                let delta = newScale / lastScale
+                let newZoomFactor = zoomFactor * delta
+                zoomFactor = min(
+                    max(newZoomFactor, Theme.minZoomFactor),
+                    Theme.maxZoomFactor
+                )
+                lastScale = zoomFactor
+                cameraViewModel.camera.setZoomFactor(zoomFactor)
+            }
+            .onEnded { _ in
+                // 重置参考值
+                lastScale = 1.0
+            }
+    }
+
     var contentView: some View {
         VStack(spacing: 0) {
             Spacer()
@@ -151,6 +175,7 @@ struct CameraView: View {
                 .aspectRatio(Theme.imageAspectRatio, contentMode: .fit)
                 .background(Color.gray)
                 .clipped()
+                .gesture(magnificationGesture)
                 .onAppear {
                     print("CameraView onAppear")
                     Task {
@@ -161,7 +186,6 @@ struct CameraView: View {
                     print("CameraView onDisappear")
                     cameraViewModel.camera.stop()
                 }
-            
             bottomView
                 .frame(maxWidth: .infinity, maxHeight: Layout.bottomHeight)
             Spacer()

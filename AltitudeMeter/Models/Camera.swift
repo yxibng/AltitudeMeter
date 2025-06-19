@@ -311,6 +311,25 @@ class Camera: NSObject {
             self.captureDevice = AVCaptureDevice.default(for: .video)
         }
     }
+    
+    func setZoomFactor(_ zoomFactor: CGFloat) {
+        guard let device = self.captureDevice else {
+            return
+        }
+        var zoomFactor = zoomFactor
+        zoomFactor = max(1.0, min(zoomFactor, device.activeFormat.videoMaxZoomFactor))
+        sessionQueue.async {
+            do {
+                try device.lockForConfiguration()
+                device.videoZoomFactor = zoomFactor
+                device.unlockForConfiguration()
+            } catch {
+                logger.error("Error setting zoom factor: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    
 
     private var deviceOrientation: UIDeviceOrientation {
         var orientation = UIDevice.current.orientation
