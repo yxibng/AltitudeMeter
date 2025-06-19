@@ -135,19 +135,47 @@ struct CameraView: View {
         }
         .padding().background(Color.clear)
     }
-    
+
     var previewWithLabels: some View {
         GeometryReader { geometry in
             ZStack {
                 CameraPreview(videoFrame: $cameraViewModel.videoFrame)
+                    .gesture(DragGesture(minimumDistance: 0).onEnded({ value in
+                        let point = value.location
+                        guard let devicePoint = self.cameraViewModel.camera
+                            .convertToDevicePoint(viewPoint: point, viewSize: geometry.size) else {
+                            return
+                        }
+                        self.cameraViewModel.camera.setFocusPoint(devicePoint)
+                        self.focusPoint = point
+                        self.showFocusIndicator = true
+                        
+                    }))
                 watermark
             }
+
+            FocusIndicator()
+                .position(focusPoint)
+                .scaleEffect(showFocusIndicator ? 1.0 : 1.2)
+                .opacity(showFocusIndicator ? 1.0 : 0.0)
+                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: showFocusIndicator)
+                .transition(.scale)
+                .onChange(of: showFocusIndicator) { newValue in
+                    if showFocusIndicator {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                            showFocusIndicator = false
+                        }
+                    }
+                }
         }
         .background(Color.black)
     }
     
     @State private var zoomFactor: CGFloat = 1.0
     @State private var lastScale: CGFloat = 1.0
+    @State private var showFocusIndicator = false
+    @State private var focusPoint: CGPoint = .zero
+    
     
     var magnificationGesture: some Gesture {
         MagnificationGesture()
