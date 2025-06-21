@@ -93,7 +93,7 @@ struct SnapshotView: View {
             Image(uiImage: image)
                 .resizable()
                 .scaledToFill()
-                .aspectRatio(Theme.imageAspectRatio, contentMode: .fit)
+                .aspectRatio(image.size.width/image.size.height, contentMode: .fit)
                 .background(Color.red)
                 .clipped()
             bottomView

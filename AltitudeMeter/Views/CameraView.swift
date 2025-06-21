@@ -39,6 +39,19 @@ struct CameraView: View {
     @State var showSnapshot = false
     @State var showNoAuthAlert = false
     
+    @StateObject private var orientationManager = OrientationManager()
+    
+    
+    private var aspectRatio: CGFloat {
+        if orientationManager.deviceOrientation.isLandscape {
+            return 1.0 / Theme.imageAspectRatio
+        }
+        return Theme.imageAspectRatio
+    }
+    
+    @State private var rotationAngle: Angle = .zero
+    
+    
     struct Layout {
         static let bottomHeight: CGFloat = 62
         static let buttonWidth: CGFloat = 32
@@ -199,21 +212,43 @@ struct CameraView: View {
     var contentView: some View {
         VStack(spacing: 0) {
             Spacer()
-            previewWithLabels
-                .aspectRatio(Theme.imageAspectRatio, contentMode: .fit)
-                .background(Color.gray)
-                .clipped()
-                .gesture(magnificationGesture)
-                .onAppear {
-                    print("CameraView onAppear")
-                    Task {
-                        await cameraViewModel.camera.start()
+            
+            FixedPositionRotatedView(angle: self.rotationAngle.degrees) {
+                previewWithLabels
+                    .aspectRatio(aspectRatio, contentMode: .fit)
+                    .background(Color.gray)
+                    .clipped()
+                    .gesture(magnificationGesture)
+                    .onAppear {
+                        print("CameraView onAppear")
+                        orientationManager.start(interval: 1 / 30.0)
+                        Task {
+                            await cameraViewModel.camera.start()
+                        }
                     }
-                }
-                .onDisappear {
-                    print("CameraView onDisappear")
-                    cameraViewModel.camera.stop()
-                }
+                    .onDisappear {
+                        print("CameraView onDisappear")
+                        orientationManager.stop()
+                        cameraViewModel.camera.stop()
+                    }
+                    .onChange(of: orientationManager.deviceOrientation) { newValue in
+                        
+                        if newValue == .portrait {
+                            self.rotationAngle = .zero
+                        } else if newValue == .landscapeLeft {
+                            self.rotationAngle = .degrees(90)
+                        } else if newValue == .landscapeRight {
+                            self.rotationAngle = .degrees(270)
+                        } else if newValue == .portraitUpsideDown {
+                            self.rotationAngle = .degrees(180)
+                        } else {
+                            self.rotationAngle = .zero
+                        }
+                    }
+            }
+            .aspectRatio(Theme.imageAspectRatio, contentMode: .fit)
+            
+
             bottomView
                 .frame(maxWidth: .infinity, maxHeight: Layout.bottomHeight)
             Spacer()
@@ -251,17 +286,31 @@ struct CameraView: View {
                 if self.showSnapshot { return }
                 guard let photo = newValue else { return }
                 let sourceImage = photo.cropToAspectRatio(
-                    Theme.imageAspectRatio
+                    aspectRatio
                 )
-                
+                var width : CGFloat {
+                    if orientationManager.deviceOrientation.isLandscape {
+                        return UIScreen.screenSize.width * aspectRatio
+                    } else {
+                        return UIScreen.screenSize.width
+                    }
+                }
+
+                var height: CGFloat {
+                    if orientationManager.deviceOrientation.isLandscape {
+                        return UIScreen.screenSize.width
+                    } else {
+                        return UIScreen.screenSize.width / aspectRatio
+                    }
+                }
+
                 let watermarkImage = watermark.asImage(
                     size: CGSize(
-                        width: UIScreen.screenSize.width,
-                        height: UIScreen.screenSize.width
-                        / Theme.imageAspectRatio
+                        width: width,
+                        height: height
                     ),
                     scale: sourceImage.correctedExtent.extent.size.width
-                    / UIScreen.screenSize.width
+                    / width
                 ).asCIImage()
                 
                 let watermarkFilter = CIFilter(name: "CISourceOverCompositing")!

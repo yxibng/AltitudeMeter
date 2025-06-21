@@ -457,7 +457,7 @@ extension Camera: AVCaptureVideoDataOutputSampleBufferDelegate {
             connection.videoOrientation = videoOrientation
         }
         
-        addToPreviewStream?(CIImage(cvPixelBuffer: pixelBuffer).oriented(deviceOrientation.cgImageOrientation))
+        addToPreviewStream?(CIImage(cvPixelBuffer: pixelBuffer))
     }
 }
 
