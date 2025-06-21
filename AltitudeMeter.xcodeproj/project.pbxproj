@@ -267,6 +267,7 @@
 				DEVELOPMENT_TEAM = 6LD22YZ4CB;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "实时海拔表";
 				INFOPLIST_KEY_NSCameraUsageDescription = "需要使用相机来拍摄照片";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "需要始终位置权限获取经纬度和海拔";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "需要位置权限获取经纬度和海拔";
@@ -301,6 +302,7 @@
 				DEVELOPMENT_TEAM = 6LD22YZ4CB;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "实时海拔表";
 				INFOPLIST_KEY_NSCameraUsageDescription = "需要使用相机来拍摄照片";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "需要始终位置权限获取经纬度和海拔";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "需要位置权限获取经纬度和海拔";

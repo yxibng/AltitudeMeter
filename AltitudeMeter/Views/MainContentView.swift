@@ -98,7 +98,7 @@ struct MainContentView: View {
 
         NavigationView {
             contentView
-                .navigationTitle("Alitude Meter")
+                .navigationTitle("实时海拔表")
                 .navigationBarTitleDisplayMode(.inline)
                 .preferredColorScheme(.dark)
 
