@@ -291,11 +291,6 @@ extension AltitudeDataModel {
         return formatter.string(from: sunset)
     }
 
-    var degrees: Double {
-        let degree = altitudeModel.heading?.magneticHeading ?? 0.0
-        return -degree  // 反转方向
-    }
-
     var bottomContent: String {
         switch altitudeModel.preferences.bottomContentType {
         case .gps:
@@ -312,6 +307,7 @@ class AltitudeDataModel: ObservableObject {
     @Published var altitudeModel = AltitudeModel()
     @Published var showNoLocationAuthAlert = false
     @Published var showNoCMAuthAlert = false
+    @Published var degrees: Double = 0.0
     private let locationManager = LocationManager()
     private var cancellables = Set<AnyCancellable>()
     init() {
@@ -400,5 +396,12 @@ class AltitudeDataModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .assign(to: \.showNoCMAuthAlert, on: self)
             .store(in: &cancellables)
+
+        locationManager.$heading
+            .map { -($0?.magneticHeading ?? 0.0)/*反转方向*/ }
+            .receive(on: DispatchQueue.main)
+            .assign(to: \.degrees, on: self)
+            .store(in: &cancellables)
+        
     }
 }

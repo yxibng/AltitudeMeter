@@ -37,7 +37,7 @@ struct MainContentView: View {
     }
 
     private var compass: some View {
-        Compass(degrees: dataModel.degrees) {
+        Compass(degrees: $dataModel.degrees) {
             VStack(alignment: .center, spacing: 0) {
                 Text(dataModel.altitudePrompt)
                     .font(.system(size: 30, weight: .bold))

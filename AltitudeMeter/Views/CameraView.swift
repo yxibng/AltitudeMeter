@@ -8,26 +8,9 @@
 import SwiftUI
 
 enum Theme {
-    static let imageAspectRatio: CGFloat = 3 / 4.0
+    static let previewAspectRatio: CGFloat = 3 / 4.0
     static let maxZoomFactor: CGFloat = 5.0
     static let minZoomFactor: CGFloat = 1.0
-}
-
-struct CameraPreview: View {
-    @Binding var videoFrame: Image?
-    var body: some View {
-        GeometryReader { geometry in
-            if let image = videoFrame {
-                image
-                    .resizable()
-                    .scaledToFill()
-                    .frame(
-                        width: geometry.size.width,
-                        height: geometry.size.height
-                    )
-            }
-        }
-    }
 }
 
 struct CameraView: View {
@@ -44,9 +27,9 @@ struct CameraView: View {
     
     private var aspectRatio: CGFloat {
         if orientationManager.deviceOrientation.isLandscape {
-            return 1.0 / Theme.imageAspectRatio
+            return 1.0 / Theme.previewAspectRatio
         }
-        return Theme.imageAspectRatio
+        return Theme.previewAspectRatio
     }
     
     @State private var rotationAngle: Angle = .zero
@@ -148,38 +131,37 @@ struct CameraView: View {
         }
         .padding().background(Color.clear)
     }
-
+    
     var previewWithLabels: some View {
         GeometryReader { geometry in
             ZStack {
-                CameraPreview(videoFrame: $cameraViewModel.videoFrame)
-                    .gesture(DragGesture(minimumDistance: 0).onEnded({ value in
-                        let point = value.location
-                        guard let devicePoint = self.cameraViewModel.camera
-                            .convertToDevicePoint(viewPoint: point, viewSize: geometry.size) else {
-                            return
-                        }
-                        self.cameraViewModel.camera.setFocusPoint(devicePoint)
-                        self.focusPoint = point
-                        self.showFocusIndicator = true
-                        
-                    }))
-                watermark
-            }
-
-            FocusIndicator()
-                .position(focusPoint)
-                .scaleEffect(showFocusIndicator ? 1.0 : 1.2)
-                .opacity(showFocusIndicator ? 1.0 : 0.0)
-                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: showFocusIndicator)
-                .transition(.scale)
-                .onChange(of: showFocusIndicator) { newValue in
-                    if showFocusIndicator {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                            showFocusIndicator = false
-                        }
-                    }
+                AVCaptureVideoPreviewView(session: self.cameraViewModel.camera.captureSession,
+                                          videoOrientation: .portrait)
+                { tapPoint, focusPoint in
+                    print("tapPoint: \(tapPoint), focusPoint: \(focusPoint)")
+                    self.focusSpot = FocusLocation(position: tapPoint)
+                    self.cameraViewModel.camera.setFocusPoint(focusPoint)
+                    self.showFocusIndicator = true
                 }
+                FixedPositionRotatedView(angle: self.rotationAngle.degrees) {
+                    watermark
+                }.frame(
+                    width: geometry.size.width,
+                    height: geometry.size.height
+                )
+            }
+            
+            if let focusSpot {
+                FocusIndicator()
+                    .frame(width: 64, height: 64)
+                    .position(focusSpot.position)
+                    .id(focusSpot.id)  // 强制重新创建视图:cite[3]
+                    .task {
+                        // 延时1秒后自动消失
+                        try? await Task.sleep(nanoseconds: 1_000_000_000)
+                        self.focusSpot = nil  // 自动消失
+                    }
+            }
         }
         .background(Color.black)
     }
@@ -187,7 +169,10 @@ struct CameraView: View {
     @State private var zoomFactor: CGFloat = 1.0
     @State private var lastScale: CGFloat = 1.0
     @State private var showFocusIndicator = false
-    @State private var focusPoint: CGPoint = .zero
+    
+    
+    @State private var focusSpot: FocusLocation?
+    
     
     
     var magnificationGesture: some Gesture {
@@ -208,47 +193,46 @@ struct CameraView: View {
                 lastScale = 1.0
             }
     }
-
+    
     var contentView: some View {
         VStack(spacing: 0) {
             Spacer()
             
-            FixedPositionRotatedView(angle: self.rotationAngle.degrees) {
-                previewWithLabels
-                    .aspectRatio(aspectRatio, contentMode: .fit)
-                    .background(Color.gray)
-                    .clipped()
-                    .gesture(magnificationGesture)
-                    .onAppear {
-                        print("CameraView onAppear")
-                        orientationManager.start(interval: 1 / 30.0)
-                        Task {
-                            await cameraViewModel.camera.start()
-                        }
-                    }
-                    .onDisappear {
-                        print("CameraView onDisappear")
-                        orientationManager.stop()
-                        cameraViewModel.camera.stop()
-                    }
-                    .onChange(of: orientationManager.deviceOrientation) { newValue in
-                        
-                        if newValue == .portrait {
-                            self.rotationAngle = .zero
-                        } else if newValue == .landscapeLeft {
-                            self.rotationAngle = .degrees(90)
-                        } else if newValue == .landscapeRight {
-                            self.rotationAngle = .degrees(270)
-                        } else if newValue == .portraitUpsideDown {
-                            self.rotationAngle = .degrees(180)
-                        } else {
-                            self.rotationAngle = .zero
-                        }
-                    }
-            }
-            .aspectRatio(Theme.imageAspectRatio, contentMode: .fit)
             
-
+            previewWithLabels
+                .aspectRatio(Theme.previewAspectRatio, contentMode: .fit)
+                .background(Color.gray)
+                .clipped()
+                .gesture(magnificationGesture)
+                .onAppear {
+                    print("CameraView onAppear")
+                    orientationManager.start(interval: 1 / 30.0)
+                    Task {
+                        await cameraViewModel.camera.start()
+                    }
+                }
+                .onDisappear {
+                    print("CameraView onDisappear")
+                    orientationManager.stop()
+                    cameraViewModel.camera.stop()
+                }
+                .onChange(of: orientationManager.deviceOrientation) { newValue in
+                    
+                    if newValue == .portrait {
+                        self.rotationAngle = .zero
+                    } else if newValue == .landscapeLeft {
+                        self.rotationAngle = .degrees(90)
+                    } else if newValue == .landscapeRight {
+                        self.rotationAngle = .degrees(270)
+                    } else if newValue == .portraitUpsideDown {
+                        self.rotationAngle = .degrees(180)
+                    } else {
+                        self.rotationAngle = .zero
+                    }
+                }
+            
+            
+            
             bottomView
                 .frame(maxWidth: .infinity, maxHeight: Layout.bottomHeight)
             Spacer()
@@ -295,7 +279,7 @@ struct CameraView: View {
                         return UIScreen.screenSize.width
                     }
                 }
-
+                
                 var height: CGFloat {
                     if orientationManager.deviceOrientation.isLandscape {
                         return UIScreen.screenSize.width
@@ -303,7 +287,7 @@ struct CameraView: View {
                         return UIScreen.screenSize.width / aspectRatio
                     }
                 }
-
+                
                 let watermarkImage = watermark.asImage(
                     size: CGSize(
                         width: width,
