@@ -16,7 +16,7 @@ class Camera: NSObject {
     deinit {
         print("Camera deinitialized")
     }
-    private let captureSession = AVCaptureSession()
+    let captureSession = AVCaptureSession()
     private var isCaptureSessionConfigured = false
     private var deviceInput: AVCaptureDeviceInput?
     private var photoOutput: AVCapturePhotoOutput?
@@ -175,18 +175,18 @@ class Camera: NSObject {
             logger.error("Unable to add photo output to capture session.")
             return
         }
-        guard captureSession.canAddOutput(videoOutput) else {
-            logger.error("Unable to add video output to capture session.")
-            return
-        }
+//        guard captureSession.canAddOutput(videoOutput) else {
+//            logger.error("Unable to add video output to capture session.")
+//            return
+//        }
         
         captureSession.addInput(deviceInput)
         captureSession.addOutput(photoOutput)
-        captureSession.addOutput(videoOutput)
+//        captureSession.addOutput(videoOutput)
         
         self.deviceInput = deviceInput
         self.photoOutput = photoOutput
-        self.videoOutput = videoOutput
+//        self.videoOutput = videoOutput
         
         photoOutput.isHighResolutionCaptureEnabled = true
         photoOutput.maxPhotoQualityPrioritization = .quality
