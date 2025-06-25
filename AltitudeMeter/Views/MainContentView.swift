@@ -20,7 +20,7 @@ struct MainContentView: View {
     private var gradientBackground: some View {
         LinearGradient(
             gradient: Gradient(colors: [
-                .orange.opacity(0.5), .blue.opacity(0.5),
+                .orange.opacity(0.5), .blue.opacity(0.5)
             ]),
             startPoint: .top,
             endPoint: .bottom

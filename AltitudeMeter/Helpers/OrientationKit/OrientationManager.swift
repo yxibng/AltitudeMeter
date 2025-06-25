@@ -6,8 +6,7 @@ import CoreMotion
 
 /// `CMDeviceMotion` wrapper to comform `ObservableObject`.
 
-public final class OrientationManager: ObservableObject
-{
+public final class OrientationManager: ObservableObject {
     @Published
     public private(set) var deviceOrientation: UIDeviceOrientation = .unknown
 
@@ -22,8 +21,7 @@ public final class OrientationManager: ObservableObject
         strategy: Strategy = .systemLike,
         interval: TimeInterval,
         queue: OperationQueue = .current ?? .main
-    )
-    {
+    ) {
         guard !self.isRunning else { return }
 
         self.deviceOrientation = UIDevice.current.orientation
@@ -33,7 +31,7 @@ public final class OrientationManager: ObservableObject
 
         coreMotionManager.deviceMotionUpdateInterval = interval
 
-        coreMotionManager.startDeviceMotionUpdates(to: queue) { [weak self] data, error in
+        coreMotionManager.startDeviceMotionUpdates(to: queue) { [weak self] data, _ in
             guard let self = self, let data = data else { return }
 
             self.deviceMotion = data
@@ -46,31 +44,26 @@ public final class OrientationManager: ObservableObject
         }
     }
 
-    public func stop()
-    {
+    public func stop() {
         self.coreMotionManager?.stopDeviceMotionUpdates()
         self.coreMotionManager = nil
         self.deviceOrientation = .unknown
     }
 
-    private var isRunning: Bool
-    {
+    private var isRunning: Bool {
         self.coreMotionManager != nil
     }
 }
 
 // MARK: - Strategy
 
-extension OrientationManager
-{
+extension OrientationManager {
     /// `UIDeviceOrientation` estimation strategy.
-    public struct Strategy: Sendable
-    {
+    public struct Strategy: Sendable {
         /// - Note: Returning `nil` means "no update".
         fileprivate let calculate: @Sendable (_ gravity: CMAcceleration) -> UIDeviceOrientation?
 
-        public init(calculate: @escaping @Sendable (_ gravity: CMAcceleration) -> UIDeviceOrientation?)
-        {
+        public init(calculate: @escaping @Sendable (_ gravity: CMAcceleration) -> UIDeviceOrientation?) {
             self.calculate = calculate
         }
     }
@@ -78,8 +71,7 @@ extension OrientationManager
 
 // MARK: Strategy Presets
 
-extension OrientationManager.Strategy
-{
+extension OrientationManager.Strategy {
     /// Largest axis wins the game.
     public static let largestAxis = Self.init(calculate: estimateLargestAxis)
 
@@ -87,42 +79,34 @@ extension OrientationManager.Strategy
     public static let systemLike = Self.init(calculate: estimateSystemLike)
 }
 
-private func estimateLargestAxis(gravity g: CMAcceleration) -> UIDeviceOrientation?
-{
+private func estimateLargestAxis(gravity g: CMAcceleration) -> UIDeviceOrientation? {
     if abs(g.z) > abs(g.x) && abs(g.z) > abs(g.y) {
-        if (g.z > 0) {
+        if g.z > 0 {
             return .faceDown
-        }
-        else {
+        } else {
             return .faceUp
         }
-    }
-    else if abs(g.x) > abs(g.y) {
-        if (g.x > 0) {
+    } else if abs(g.x) > abs(g.y) {
+        if g.x > 0 {
             return .landscapeRight
-        }
-        else {
+        } else {
             return .landscapeLeft
         }
-    }
-    else {
-        if (g.y > 0) {
+    } else {
+        if g.y > 0 {
             return .portraitUpsideDown
-        }
-        else {
+        } else {
             return .portrait
         }
     }
 }
 
-private func estimateSystemLike(gravity g: CMAcceleration) -> UIDeviceOrientation?
-{
+private func estimateSystemLike(gravity g: CMAcceleration) -> UIDeviceOrientation? {
     // Just a quick guess, but mimics iPhone's behavior fairly well.
     if abs(g.z) > 0.88 {
-        if (g.z > 0) {
+        if g.z > 0 {
             return .faceDown
-        }
-        else {
+        } else {
             return .faceUp
         }
     }
@@ -153,18 +137,15 @@ private func estimateSystemLike(gravity g: CMAcceleration) -> UIDeviceOrientatio
     let threshold = 1.07 + 0.1 * abs(g.z)
 
     if x_ > y_ && atan2(x_, y_) > threshold {
-        if (g.x > 0) {
+        if g.x > 0 {
             return .landscapeRight
-        }
-        else {
+        } else {
             return .landscapeLeft
         }
-    }
-    else if y_ > x_ && atan2(y_, x_) > threshold {
-        if (g.y > 0) {
+    } else if y_ > x_ && atan2(y_, x_) > threshold {
+        if g.y > 0 {
             return .portraitUpsideDown
-        }
-        else {
+        } else {
             return .portrait
         }
     }

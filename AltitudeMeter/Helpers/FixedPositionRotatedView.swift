@@ -11,12 +11,12 @@ struct FixedPositionRotatedView<Content: View>: View {
     let content: Content
     let angle: Double
     @State private var originalSize: CGSize = .zero
-    
+
     init(angle: Double = 90, @ViewBuilder content: () -> Content) {
         self.content = content()
         self.angle = angle
     }
-    
+
     var body: some View {
         GeometryReader { outerProxy in
             ZStack {
@@ -30,7 +30,7 @@ struct FixedPositionRotatedView<Content: View>: View {
                                 }
                         }
                     )
-                
+
                 // 旋转后的内容（保持中心点位置不变）
                 content
                     .rotationEffect(.degrees(angle))
@@ -45,7 +45,7 @@ struct FixedPositionRotatedView<Content: View>: View {
             }
         }
     }
-    
+
     private var shouldSwapDimensions: Bool {
         let normalizedAngle = angle.truncatingRemainder(dividingBy: 360)
         return normalizedAngle.isClose(to: 90) || normalizedAngle.isClose(to: 270)

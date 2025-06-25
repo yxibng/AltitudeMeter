@@ -10,7 +10,7 @@ import SwiftUI
 struct ShareSheetModifer: ViewModifier {
     @Binding var showShareSheet: Bool
     @State var shareSheetItems: [Any] = []
-    var excludedActivityTypes: [UIActivity.ActivityType]? = nil
+    var excludedActivityTypes: [UIActivity.ActivityType]?
 
     func body(content: Content) -> some View {
         content.sheet(
@@ -27,7 +27,7 @@ struct ShareSheetModifer: ViewModifier {
 
 struct ActivityViewController: UIViewControllerRepresentable {
     @Binding var activityItems: [Any]
-    var excludedActivityTypes: [UIActivity.ActivityType]? = nil
+    var excludedActivityTypes: [UIActivity.ActivityType]?
 
     func makeUIViewController(
         context: UIViewControllerRepresentableContext<ActivityViewController>

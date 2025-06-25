@@ -3,10 +3,8 @@ import AVFoundation
 
 // MARK: - CGImagePropertyOrientation
 
-extension CGImagePropertyOrientation
-{
-    public init?(uiImageOrientation: UIImage.Orientation)
-    {
+extension CGImagePropertyOrientation {
+    public init?(uiImageOrientation: UIImage.Orientation) {
         switch uiImageOrientation {
         case .up:
             self = .up
@@ -29,18 +27,15 @@ extension CGImagePropertyOrientation
         }
     }
 
-    public var uiImageOrientation: UIImage.Orientation
-    {
+    public var uiImageOrientation: UIImage.Orientation {
         UIImage.Orientation.init(cgImageOrientation: self)
     }
 }
 
 // MARK: - AVCaptureVideoOrientation
 
-extension AVCaptureVideoOrientation: @retroactive CustomDebugStringConvertible
-{
-    public var debugDescription: String
-    {
+extension AVCaptureVideoOrientation: @retroactive CustomDebugStringConvertible {
+    public var debugDescription: String {
         switch self {
         case .portrait:
             return "portrait"
@@ -55,8 +50,7 @@ extension AVCaptureVideoOrientation: @retroactive CustomDebugStringConvertible
         }
     }
 
-    public init?(deviceOrientation: UIDeviceOrientation)
-    {
+    public init?(deviceOrientation: UIDeviceOrientation) {
         switch deviceOrientation {
         case .portrait:
             self = .portrait
@@ -75,8 +69,7 @@ extension AVCaptureVideoOrientation: @retroactive CustomDebugStringConvertible
         }
     }
 
-    public init?(interfaceOrientation: UIInterfaceOrientation)
-    {
+    public init?(interfaceOrientation: UIInterfaceOrientation) {
         switch interfaceOrientation {
         case .portrait:
             self = .portrait
@@ -96,10 +89,8 @@ extension AVCaptureVideoOrientation: @retroactive CustomDebugStringConvertible
 
 // MARK: - UIDeviceOrientation
 
-extension UIDeviceOrientation: @retroactive CustomDebugStringConvertible
-{
-    public var debugDescription: String
-    {
+extension UIDeviceOrientation: @retroactive CustomDebugStringConvertible {
+    public var debugDescription: String {
         switch self {
         case .portrait:
             return "portrait"
@@ -120,18 +111,15 @@ extension UIDeviceOrientation: @retroactive CustomDebugStringConvertible
         }
     }
 
-    public var interfaceOrientation: UIInterfaceOrientation
-    {
+    public var interfaceOrientation: UIInterfaceOrientation {
         UIInterfaceOrientation.init(deviceOrientation: self)
     }
 
-    public var avCaptureVideoOrientation: AVCaptureVideoOrientation?
-    {
+    public var avCaptureVideoOrientation: AVCaptureVideoOrientation? {
         AVCaptureVideoOrientation.init(deviceOrientation: self)
     }
 
-    public var estimatedImageOrientation: UIImage.Orientation?
-    {
+    public var estimatedImageOrientation: UIImage.Orientation? {
         switch self {
         case .portrait:
             return .right
@@ -155,10 +143,8 @@ extension UIDeviceOrientation: @retroactive CustomDebugStringConvertible
 
 // MARK: - UIInterfaceOrientation
 
-extension UIInterfaceOrientation: @retroactive CustomDebugStringConvertible
-{
-    public var debugDescription: String
-    {
+extension UIInterfaceOrientation: @retroactive CustomDebugStringConvertible {
+    public var debugDescription: String {
         switch self {
         case .portrait:
             return "portrait"
@@ -175,8 +161,7 @@ extension UIInterfaceOrientation: @retroactive CustomDebugStringConvertible
         }
     }
 
-    public init(deviceOrientation: UIDeviceOrientation)
-    {
+    public init(deviceOrientation: UIDeviceOrientation) {
         switch deviceOrientation {
         case .portrait:
             self = .portrait
@@ -195,18 +180,15 @@ extension UIInterfaceOrientation: @retroactive CustomDebugStringConvertible
         }
     }
 
-    public var avCaptureVideoOrientation: AVCaptureVideoOrientation?
-    {
+    public var avCaptureVideoOrientation: AVCaptureVideoOrientation? {
         AVCaptureVideoOrientation.init(interfaceOrientation: self)
     }
 }
 
 // MARK: - UIImage.Orientation
 
-extension UIImage.Orientation
-{
-    public init(cgImageOrientation: CGImagePropertyOrientation)
-    {
+extension UIImage.Orientation {
+    public init(cgImageOrientation: CGImagePropertyOrientation) {
         switch cgImageOrientation {
         case .up:
             self = .up
@@ -227,8 +209,7 @@ extension UIImage.Orientation
         }
     }
 
-    public init?(deviceOrientation: UIDeviceOrientation, cameraPosition: AVCaptureDevice.Position)
-    {
+    public init?(deviceOrientation: UIDeviceOrientation, cameraPosition: AVCaptureDevice.Position) {
         switch cameraPosition {
         case .back:
             switch deviceOrientation {
@@ -274,13 +255,11 @@ extension UIImage.Orientation
         }
     }
 
-    public var cgImagePropertyOrientation: CGImagePropertyOrientation?
-    {
+    public var cgImagePropertyOrientation: CGImagePropertyOrientation? {
         CGImagePropertyOrientation.init(uiImageOrientation: self)
     }
 
-    public var estimatedDeviceOrientation: UIDeviceOrientation
-    {
+    public var estimatedDeviceOrientation: UIDeviceOrientation {
         switch self {
         case .up:
             return .landscapeLeft
@@ -289,7 +268,7 @@ extension UIImage.Orientation
         case .left:
             return .portraitUpsideDown
         case .right:
-            return .portrait;
+            return .portrait
         default:
             return .unknown
         }
@@ -302,10 +281,8 @@ extension UIImage.Orientation
 
 import SwiftUI
 
-extension SwiftUI.Image.Orientation
-{
-    public init(cgImageOrientation: CGImagePropertyOrientation)
-    {
+extension SwiftUI.Image.Orientation {
+    public init(cgImageOrientation: CGImagePropertyOrientation) {
         switch cgImageOrientation {
         case .up:
             self = .up
@@ -326,8 +303,7 @@ extension SwiftUI.Image.Orientation
         }
     }
 
-    public var cgImageOrientation: CGImagePropertyOrientation
-    {
+    public var cgImageOrientation: CGImagePropertyOrientation {
         switch self {
         case .up:
             return .up

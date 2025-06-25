@@ -15,7 +15,7 @@ extension UIView {
             size: self.layer.bounds.size,
             format: format
         )
-        .image { context in
+        .image { _ in
             self.drawHierarchy(in: self.layer.bounds, afterScreenUpdates: true)
         }
     }
@@ -49,7 +49,6 @@ extension View {
     }
 }
 
-
 extension UIImage {
     func asCIImage() -> CIImage {
         if let ciImage = CIImage(image: self) {
@@ -58,5 +57,5 @@ extension UIImage {
             return CIImage(cgImage: self.cgImage!)
         }
     }
-        
+
 }

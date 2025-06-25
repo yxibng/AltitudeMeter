@@ -3,16 +3,15 @@
 //  AltitudeMeter
 //
 //  Created by yxibng on 2025/6/11.
-//https://developer.apple.com/tutorials/sample-apps/capturingphotos-camerapreview
+// https://developer.apple.com/tutorials/sample-apps/capturingphotos-camerapreview
 
 import AVFoundation
 import CoreImage
 import UIKit
 import os.log
 
-
 class Camera: NSObject {
-    
+
     deinit {
         print("Camera deinitialized")
     }
@@ -23,29 +22,29 @@ class Camera: NSObject {
     private var videoOutput: AVCaptureVideoDataOutput?
     private var sessionQueue: DispatchQueue!
     private let orientationManager = OrientationManager()
-    
+
     private var allCaptureDevices: [AVCaptureDevice] {
         AVCaptureDevice.DiscoverySession(
             deviceTypes: [
                 .builtInTrueDepthCamera, .builtInDualCamera,
                 .builtInDualWideCamera, .builtInWideAngleCamera,
-                .builtInDualWideCamera,
+                .builtInDualWideCamera
             ],
             mediaType: .video,
             position: .unspecified
         ).devices
     }
-    
+
     private var frontCaptureDevices: [AVCaptureDevice] {
         allCaptureDevices
             .filter { $0.position == .front }
     }
-    
+
     private var backCaptureDevices: [AVCaptureDevice] {
         allCaptureDevices
             .filter { $0.position == .back }
     }
-    
+
     private var captureDevices: [AVCaptureDevice] {
         var devices = [AVCaptureDevice]()
 #if os(macOS) || (os(iOS) && targetEnvironment(macCatalyst))
@@ -60,13 +59,13 @@ class Camera: NSObject {
 #endif
         return devices
     }
-    
+
     private var availableCaptureDevices: [AVCaptureDevice] {
         captureDevices
             .filter({ $0.isConnected })
             .filter({ !$0.isSuspended })
     }
-    
+
     private var captureDevice: AVCaptureDevice? {
         didSet {
             guard let captureDevice = captureDevice else { return }
@@ -76,27 +75,27 @@ class Camera: NSObject {
             }
         }
     }
-    
+
     var isRunning: Bool {
         captureSession.isRunning
     }
-    
+
     var isUsingFrontCaptureDevice: Bool {
         guard let captureDevice = captureDevice else { return false }
         return frontCaptureDevices.contains(captureDevice)
     }
-    
+
     var isUsingBackCaptureDevice: Bool {
         guard let captureDevice = captureDevice else { return false }
         return backCaptureDevices.contains(captureDevice)
     }
-    
+
     private var addToPhotoStream: ((AVCapturePhoto) -> Void)?
-    
+
     private var addToPreviewStream: ((CIImage) -> Void)?
-    
+
     var isPreviewPaused = false
-    
+
     lazy var previewStream: AsyncStream<CIImage> = {
         AsyncStream { continuation in
             addToPreviewStream = { ciImage in
@@ -106,7 +105,7 @@ class Camera: NSObject {
             }
         }
     }()
-    
+
     lazy var photoStream: AsyncStream<AVCapturePhoto> = {
         AsyncStream { continuation in
             addToPhotoStream = { photo in
@@ -114,19 +113,19 @@ class Camera: NSObject {
             }
         }
     }()
-    
+
     override init() {
         super.init()
         initialize()
     }
-    
+
     private func initialize() {
         sessionQueue = DispatchQueue(label: "session queue")
-        
+
         captureDevice =
         availableCaptureDevices.first
         ?? AVCaptureDevice.default(for: .video)
-        
+
         UIDevice.current.beginGeneratingDeviceOrientationNotifications()
         NotificationCenter.default.addObserver(
             self,
@@ -135,20 +134,20 @@ class Camera: NSObject {
             object: nil
         )
     }
-    
+
     private func configureCaptureSession(
         completionHandler: (_ success: Bool) -> Void
     ) {
-        
+
         var success = false
-        
+
         self.captureSession.beginConfiguration()
-        
+
         defer {
             self.captureSession.commitConfiguration()
             completionHandler(success)
         }
-        
+
         guard
             let captureDevice = captureDevice,
             let deviceInput = try? AVCaptureDeviceInput(device: captureDevice)
@@ -156,17 +155,17 @@ class Camera: NSObject {
             logger.error("Failed to obtain video input.")
             return
         }
-        
+
         let photoOutput = AVCapturePhotoOutput()
-        
+
         captureSession.sessionPreset = AVCaptureSession.Preset.photo
-        
+
         let videoOutput = AVCaptureVideoDataOutput()
         videoOutput.setSampleBufferDelegate(
             self,
             queue: DispatchQueue(label: "VideoDataOutputQueue")
         )
-        
+
         guard captureSession.canAddInput(deviceInput) else {
             logger.error("Unable to add device input to capture session.")
             return
@@ -179,25 +178,25 @@ class Camera: NSObject {
 //            logger.error("Unable to add video output to capture session.")
 //            return
 //        }
-        
+
         captureSession.addInput(deviceInput)
         captureSession.addOutput(photoOutput)
 //        captureSession.addOutput(videoOutput)
-        
+
         self.deviceInput = deviceInput
         self.photoOutput = photoOutput
 //        self.videoOutput = videoOutput
-        
+
         photoOutput.isHighResolutionCaptureEnabled = true
         photoOutput.maxPhotoQualityPrioritization = .quality
-        
+
         updateVideoOutputConnection()
-        
+
         isCaptureSessionConfigured = true
-        
+
         success = true
     }
-    
+
     private func checkAuthorization() async -> Bool {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
@@ -219,10 +218,9 @@ class Camera: NSObject {
             return false
         }
     }
-    
+
     private func deviceInputFor(device: AVCaptureDevice?)
-    -> AVCaptureDeviceInput?
-    {
+    -> AVCaptureDeviceInput? {
         guard let validDevice = device else { return nil }
         do {
             return try AVCaptureDeviceInput(device: validDevice)
@@ -233,52 +231,49 @@ class Camera: NSObject {
             return nil
         }
     }
-    
-    private func updateSessionForCaptureDevice(_ captureDevice: AVCaptureDevice)
-    {
+
+    private func updateSessionForCaptureDevice(_ captureDevice: AVCaptureDevice) {
         guard isCaptureSessionConfigured else { return }
-        
+
         captureSession.beginConfiguration()
         defer { captureSession.commitConfiguration() }
-        
+
         for input in captureSession.inputs {
             if let deviceInput = input as? AVCaptureDeviceInput {
                 captureSession.removeInput(deviceInput)
             }
         }
-        
+
         if let deviceInput = deviceInputFor(device: captureDevice) {
             if !captureSession.inputs.contains(deviceInput),
-               captureSession.canAddInput(deviceInput)
-            {
+               captureSession.canAddInput(deviceInput) {
                 captureSession.addInput(deviceInput)
             }
         }
-        
+
         updateVideoOutputConnection()
     }
-    
+
     private func updateVideoOutputConnection() {
         if let videoOutput = videoOutput,
-           let videoOutputConnection = videoOutput.connection(with: .video)
-        {
+           let videoOutputConnection = videoOutput.connection(with: .video) {
             if videoOutputConnection.isVideoMirroringSupported {
                 videoOutputConnection.isVideoMirrored =
                 isUsingFrontCaptureDevice
             }
         }
     }
-    
+
     func start() async {
-        
+
         self.orientationManager.start(interval: 1.0/30)
-        
+
         let authorized = await checkAuthorization()
         guard authorized else {
             logger.error("Camera access was not authorized.")
             return
         }
-        
+
         if isCaptureSessionConfigured {
             if !captureSession.isRunning {
                 sessionQueue.async { [self] in
@@ -287,7 +282,7 @@ class Camera: NSObject {
             }
             return
         }
-        
+
         sessionQueue.async { [self] in
             self.configureCaptureSession { success in
                 guard success else { return }
@@ -295,7 +290,7 @@ class Camera: NSObject {
             }
         }
     }
-    
+
     func stop() {
         self.orientationManager.stop()
         guard isCaptureSessionConfigured else { return }
@@ -305,18 +300,17 @@ class Camera: NSObject {
             }
         }
     }
-    
+
     func switchCaptureDevice() {
         if let captureDevice = captureDevice,
-           let index = availableCaptureDevices.firstIndex(of: captureDevice)
-        {
+           let index = availableCaptureDevices.firstIndex(of: captureDevice) {
             let nextIndex = (index + 1) % availableCaptureDevices.count
             self.captureDevice = availableCaptureDevices[nextIndex]
         } else {
             self.captureDevice = AVCaptureDevice.default(for: .video)
         }
     }
-    
+
     func setZoomFactor(_ zoomFactor: CGFloat) {
         guard let device = self.captureDevice else {
             return
@@ -333,7 +327,7 @@ class Camera: NSObject {
             }
         }
     }
-    
+
     // MARK: - 设置对焦点
     func setFocusPoint(_ point: CGPoint) {
         guard let device = self.captureDevice else {
@@ -361,16 +355,15 @@ class Camera: NSObject {
         debugPrint(self.orientationManager.deviceOrientation)
         return self.orientationManager.deviceOrientation
     }
-    
+
     @objc
     func updateForDeviceOrientation() {
-        //TODO: Figure out if we need this for anything.
+        // TODO: Figure out if we need this for anything.
         print("Device orientation changed: \(deviceOrientation.rawValue)")
     }
-    
+
     private func videoOrientationFor(_ deviceOrientation: UIDeviceOrientation)
-    -> AVCaptureVideoOrientation?
-    {
+    -> AVCaptureVideoOrientation? {
         switch deviceOrientation {
         case .portrait: return AVCaptureVideoOrientation.portrait
         case .portraitUpsideDown:
@@ -380,27 +373,26 @@ class Camera: NSObject {
         default: return nil
         }
     }
-    
+
     func takePhoto() {
         guard let photoOutput = self.photoOutput else { return }
-        
+
         sessionQueue.async {
-            
+
             var photoSettings = AVCapturePhotoSettings()
-            
+
             if photoOutput.availablePhotoCodecTypes.contains(.hevc) {
                 photoSettings = AVCapturePhotoSettings(format: [
                     AVVideoCodecKey: AVVideoCodecType.hevc
                 ])
             }
-            
+
             let isFlashAvailable =
             self.deviceInput?.device.isFlashAvailable ?? false
             photoSettings.flashMode = isFlashAvailable ? .auto : .off
             photoSettings.isHighResolutionPhotoEnabled = true
             if let previewPhotoPixelFormatType = photoSettings
-                .availablePreviewPhotoPixelFormatTypes.first
-            {
+                .availablePreviewPhotoPixelFormatTypes.first {
                 photoSettings.previewPhotoFormat = [
                     kCVPixelBufferPixelFormatTypeKey as String:
                         previewPhotoPixelFormatType
@@ -413,74 +405,72 @@ class Camera: NSObject {
                 if photoOutputVideoConnection.isVideoOrientationSupported,
                    let videoOrientation = self.videoOrientationFor(
                     self.deviceOrientation
-                   )
-                {
+                   ) {
                     photoOutputVideoConnection.videoOrientation =
                     videoOrientation
                 }
             }
-            
+
             photoOutput.capturePhoto(with: photoSettings, delegate: self)
         }
     }
 }
 
 extension Camera: AVCapturePhotoCaptureDelegate {
-    
+
     func photoOutput(
         _ output: AVCapturePhotoOutput,
         didFinishProcessingPhoto photo: AVCapturePhoto,
         error: Error?
     ) {
-        
+
         if let error = error {
             logger.error("Error capturing photo: \(error.localizedDescription)")
             return
         }
-        
+
         addToPhotoStream?(photo)
     }
 }
 
 extension Camera: AVCaptureVideoDataOutputSampleBufferDelegate {
-    
+
     func captureOutput(
         _ output: AVCaptureOutput,
         didOutput sampleBuffer: CMSampleBuffer,
         from connection: AVCaptureConnection
     ) {
         guard let pixelBuffer = sampleBuffer.imageBuffer else { return }
-        
+
         if connection.isVideoOrientationSupported,
-           let videoOrientation = videoOrientationFor(deviceOrientation)
-        {
+           let videoOrientation = videoOrientationFor(deviceOrientation) {
             connection.videoOrientation = videoOrientation
         }
-        
+
         addToPreviewStream?(CIImage(cvPixelBuffer: pixelBuffer))
     }
 }
 
 extension Camera {
-    
+
     // MARK: - 坐标转换 (完整方向处理)
     func convertToDevicePoint(viewPoint: CGPoint, viewSize: CGSize) -> CGPoint? {
         guard let captureDevice = captureDevice else { return nil }
-        
+
         // 1. 获取视频尺寸（横屏自然方向）
         let videoDimensions = CMVideoFormatDescriptionGetDimensions(captureDevice.activeFormat.formatDescription)
         let videoSize = CGSize(width: CGFloat(videoDimensions.width),
                                height: CGFloat(videoDimensions.height))
         let videoAspect = videoSize.width / videoSize.height
-        
+
         // 2. 预览视图尺寸
         let viewAspect = viewSize.width / viewSize.height
-        
+
         // 3. 计算Aspect Fill模式下的实际视频区域
         let fillScale: CGFloat
         let scaledVideoSize: CGSize
         let offset: CGPoint
-        
+
         if viewAspect > videoAspect {
             // 视图更宽 - 裁剪垂直方向
             fillScale = viewSize.width / videoSize.width
@@ -492,23 +482,23 @@ extension Camera {
             scaledVideoSize = CGSize(width: videoSize.width * fillScale, height: viewSize.height)
             offset = CGPoint(x: (viewSize.width - scaledVideoSize.width) / 2, y: 0)
         }
-        
+
         // 4. 转换到视频坐标系
         let normalizedPoint = CGPoint(
             x: (viewPoint.x - offset.x) / scaledVideoSize.width,
             y: (viewPoint.y - offset.y) / scaledVideoSize.height
         )
-        
+
         // 5. 确保点在有效范围内
         guard normalizedPoint.x >= 0, normalizedPoint.x <= 1,
               normalizedPoint.y >= 0, normalizedPoint.y <= 1 else {
             return nil
         }
-        
+
         // 6. 处理 Zoom Factor
         let zoomFactor = captureDevice.videoZoomFactor
         let zoomAdjustedPoint = adjustPointForZoom(point: normalizedPoint, zoomFactor: zoomFactor)
-        
+
         // 7. 完整设备方向处理
         let orientationAdjustedPoint = adjustPointForDeviceOrientation(
             point: zoomAdjustedPoint,
@@ -516,7 +506,7 @@ extension Camera {
         )
         return orientationAdjustedPoint
     }
-    
+
     // MARK: - 完整设备方向处理
     private func adjustPointForDeviceOrientation(point: CGPoint, orientation: UIDeviceOrientation) -> CGPoint {
         /*
@@ -528,23 +518,23 @@ extension Camera {
          我们需要将视图坐标系中的点转换为传感器坐标系中的点
          考虑设备当前的物理方向
          */
-        
+
         switch orientation {
         case .portrait:
             // 设备竖立，Home键在下
             // 需要顺时针旋转90度: (x, y) -> (y, 1-x)
             return CGPoint(x: point.y, y: 1 - point.x)
-            
+
         case .portraitUpsideDown:
             // 设备倒立，Home键在上
             // 需要逆时针旋转90度: (x, y) -> (1-y, x)
             return CGPoint(x: 1 - point.y, y: point.x)
-            
+
         case .landscapeLeft:
             // 设备向左横置，Home键在左
             // 需要旋转180度: (x, y) -> (1-x, 1-y)
             return CGPoint(x: 1 - point.x, y: 1 - point.y)
-            
+
         case .landscapeRight:
             // 设备向右横置，Home键在右 (自然方向)
             return point
@@ -553,29 +543,26 @@ extension Camera {
             return adjustPointForDeviceOrientation(point: point, orientation: self.deviceOrientation)
         }
     }
-    
+
     // MARK: - Zoom Factor 坐标调整
     private func adjustPointForZoom(point: CGPoint, zoomFactor: CGFloat) -> CGPoint {
         guard zoomFactor > 1.0 else { return point }
-        
+
         // 1. 计算缩放区域大小 (归一化)
         let zoomAreaSize = 1.0 / zoomFactor
-        
+
         // 2. 计算缩放区域原点 (居中)
         let zoomOriginX = (1.0 - zoomAreaSize) / 2.0
         let zoomOriginY = (1.0 - zoomAreaSize) / 2.0
-        
+
         // 3. 将点映射到缩放区域内
         let zoomedX = zoomOriginX + point.x * zoomAreaSize
         let zoomedY = zoomOriginY + point.y * zoomAreaSize
-        
+
         return CGPoint(x: zoomedX, y: zoomedY)
     }
-    
-    
+
 }
-
-
 
 extension UIScreen {
     fileprivate var orientation: UIDeviceOrientation {
@@ -588,9 +575,9 @@ extension UIScreen {
         } else if point.x != 0 && point.y != 0 {
             return .portraitUpsideDown
         } else if point.x == 0 && point.y != 0 {
-            return .landscapeRight  //.landscapeLeft
+            return .landscapeRight  // .landscapeLeft
         } else if point.x != 0 && point.y == 0 {
-            return .landscapeLeft  //.landscapeRight
+            return .landscapeLeft  // .landscapeRight
         } else {
             return .unknown
         }
@@ -613,8 +600,6 @@ extension UIDeviceOrientation {
         }
     }
 }
-
-
 
 private let logger = Logger(
     subsystem: "com.apple.swiftplaygroundscontent.capturingphotos",

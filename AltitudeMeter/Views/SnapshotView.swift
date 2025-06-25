@@ -26,7 +26,7 @@ struct SnapshotView: View {
     var bottomView: some View {
         ZStack {
             Button {
-                //save
+                // save
                 Task {
                     do {
                         try await PhotoLibrary.saveImage(
@@ -39,8 +39,7 @@ struct SnapshotView: View {
                     } catch {
                         print("Error saving image: \(error)")
                         if let error = error as? PhotoLibrary.PhotoLibraryError,
-                            error == .authorizationDenied
-                        {
+                            error == .authorizationDenied {
                             Task { @MainActor in
                                 showNoAuthAlert = true
                             }

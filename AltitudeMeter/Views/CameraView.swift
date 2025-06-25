@@ -17,34 +17,31 @@ struct CameraView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var altitudeDataMode: AltitudeDataModel
     @StateObject var cameraViewModel = CameraViewModel()
-    
-    @State var snpashot: UIImage? = nil
+
+    @State var snpashot: UIImage?
     @State var showSnapshot = false
     @State var showNoAuthAlert = false
-    
+
     @StateObject private var orientationManager = OrientationManager()
-    
-    
+
     private var aspectRatio: CGFloat {
         if orientationManager.deviceOrientation.isLandscape {
             return 1.0 / Theme.previewAspectRatio
         }
         return Theme.previewAspectRatio
     }
-    
+
     @State private var rotationAngle: Angle = .zero
-    
-    
+
     struct Layout {
         static let bottomHeight: CGFloat = 62
         static let buttonWidth: CGFloat = 32
         static let takePhotoButtonWidth: CGFloat = 50
         static let takePhotoButtonInnerWidth: CGFloat = 40
     }
-    
+
     func makeButton(imageName: String, action: @escaping () -> Void)
-    -> some View
-    {
+    -> some View {
         Button(action: action) {
             Image(systemName: imageName)
                 .resizable()
@@ -52,7 +49,7 @@ struct CameraView: View {
         }.tint(.white)
             .frame(height: Layout.buttonWidth)
     }
-    
+
     var bottomView: some View {
         HStack {
             makeButton(imageName: "arrowshape.turn.up.backward") {
@@ -86,7 +83,7 @@ struct CameraView: View {
         }
         .padding(EdgeInsets(top: 10, leading: 32, bottom: 0, trailing: 32))
     }
-    
+
     var snapshotSize: CGSize {
         let width = UIScreen.main.bounds.size.width
         let height =
@@ -94,7 +91,7 @@ struct CameraView: View {
         - UIScreen.safeAreaInsets.bottom - UIScreen.safeAreaInsets.top
         return CGSize(width: width, height: height)
     }
-    
+
     var watermark: some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(alignment: .center, spacing: 5) {
@@ -108,9 +105,9 @@ struct CameraView: View {
                         .font(.system(size: 15, weight: .bold))
                     + Text(altitudeDataMode.altitudeModel.preferences.altitudeUnit.title)
                         .font(.system(size: 14, weight: .medium))
-                    
+
                     Spacer().frame(height: 3)
-                    
+
                     Text("气压：")
                         .font(.system(size: 14))
                     + Text(altitudeDataMode.pressure)
@@ -126,18 +123,17 @@ struct CameraView: View {
                 .system(size: 14, weight: .bold)
             )
             .foregroundColor(.white)
-            
+
             Spacer()
         }
         .padding().background(Color.clear)
     }
-    
+
     var previewWithLabels: some View {
         GeometryReader { geometry in
             ZStack {
                 AVCaptureVideoPreviewView(session: self.cameraViewModel.camera.captureSession,
-                                          videoOrientation: .portrait)
-                { tapPoint, focusPoint in
+                                          videoOrientation: .portrait) { tapPoint, focusPoint in
                     print("tapPoint: \(tapPoint), focusPoint: \(focusPoint)")
                     self.focusSpot = FocusLocation(position: tapPoint)
                     self.cameraViewModel.camera.setFocusPoint(focusPoint)
@@ -150,7 +146,7 @@ struct CameraView: View {
                     height: geometry.size.height
                 )
             }
-            
+
             if let focusSpot {
                 FocusIndicator()
                     .frame(width: 64, height: 64)
@@ -165,16 +161,13 @@ struct CameraView: View {
         }
         .background(Color.black)
     }
-    
+
     @State private var zoomFactor: CGFloat = 1.0
     @State private var lastScale: CGFloat = 1.0
     @State private var showFocusIndicator = false
-    
-    
+
     @State private var focusSpot: FocusLocation?
-    
-    
-    
+
     var magnificationGesture: some Gesture {
         MagnificationGesture()
             .onChanged { newScale in
@@ -193,12 +186,11 @@ struct CameraView: View {
                 lastScale = 1.0
             }
     }
-    
+
     var contentView: some View {
         VStack(spacing: 0) {
             Spacer()
-            
-            
+
             previewWithLabels
                 .aspectRatio(Theme.previewAspectRatio, contentMode: .fit)
                 .background(Color.gray)
@@ -217,7 +209,7 @@ struct CameraView: View {
                     cameraViewModel.camera.stop()
                 }
                 .onChange(of: orientationManager.deviceOrientation) { newValue in
-                    
+
                     if newValue == .portrait {
                         self.rotationAngle = .zero
                     } else if newValue == .landscapeLeft {
@@ -230,15 +222,13 @@ struct CameraView: View {
                         self.rotationAngle = .zero
                     }
                 }
-            
-            
-            
+
             bottomView
                 .frame(maxWidth: .infinity, maxHeight: Layout.bottomHeight)
             Spacer()
         }
     }
-    
+
     var body: some View {
         contentView
             .background(Color.black)
@@ -272,14 +262,14 @@ struct CameraView: View {
                 let sourceImage = photo.cropToAspectRatio(
                     aspectRatio
                 )
-                var width : CGFloat {
+                var width: CGFloat {
                     if orientationManager.deviceOrientation.isLandscape {
                         return UIScreen.screenSize.width * aspectRatio
                     } else {
                         return UIScreen.screenSize.width
                     }
                 }
-                
+
                 var height: CGFloat {
                     if orientationManager.deviceOrientation.isLandscape {
                         return UIScreen.screenSize.width
@@ -287,7 +277,7 @@ struct CameraView: View {
                         return UIScreen.screenSize.width / aspectRatio
                     }
                 }
-                
+
                 let watermarkImage = watermark.asImage(
                     size: CGSize(
                         width: width,
@@ -296,7 +286,7 @@ struct CameraView: View {
                     scale: sourceImage.correctedExtent.extent.size.width
                     / width
                 ).asCIImage()
-                
+
                 let watermarkFilter = CIFilter(name: "CISourceOverCompositing")!
                 watermarkFilter.setValue(
                     sourceImage.correctedExtent,
@@ -310,7 +300,7 @@ struct CameraView: View {
                     print("Failed to create watermark image")
                     return
                 }
-                
+
                 let context = CIContext()
                 let cgImage = context.createCGImage(
                     sourceImage,
@@ -320,7 +310,7 @@ struct CameraView: View {
                     return
                 }
                 let image = UIImage(cgImage: cgImage)
-                
+
                 self.snpashot = image
                 self.showSnapshot = true
             }

@@ -9,7 +9,6 @@ import CoreImage
 import AVFoundation
 import UIKit
 
-
 extension CGRect {
     func cropRect(aspectRatio targetRatio: CGFloat) -> CGRect {
         let imageRatio = self.width / self.height
@@ -46,7 +45,7 @@ extension CIImage {
         }
         return self.cropped(to: cropRect)
     }
-    
+
     var uiImage: UIImage? {
         // 将 CIImage 转换为 UIImage
         let context = CIContext(options: nil)
@@ -55,7 +54,7 @@ extension CIImage {
         }
         return nil
     }
-    
+
     /*
      参考：
      https://stackoverflow.com/questions/8170336/core-image-after-using-cicrop-applying-a-compositing-filter-doesnt-line-up
@@ -66,12 +65,11 @@ extension CIImage {
     }
 }
 
-
 extension AVCapturePhoto {
     var ciImage: CIImage? {
-        
+
         if let pixelBuffer = pixelBuffer {
-            //raw
+            // raw
             return CIImage(cvPixelBuffer: pixelBuffer)
         }
 

@@ -27,7 +27,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         manager.requestWhenInUseAuthorization()  // 请求权限
         manager.desiredAccuracy = kCLLocationAccuracyBestForNavigation  // 高精度模式
         manager.distanceFilter = 1.0  // 位置变化至少1米时更新
-        aiMeter.startRelativeAltitudeUpdates(to: .main) { data, error in
+        aiMeter.startRelativeAltitudeUpdates(to: .main) { data, _ in
             self.pressure = data?.pressure.doubleValue  // 获取气压数据
         }
     }
@@ -63,7 +63,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                 first.administrativeArea,
                 first.locality,
                 first.subLocality,
-                first.thoroughfare,
+                first.thoroughfare
             ]
             .compactMap { $0 }
             .joined(separator: ", ")  // 返回国家、行政区、城市、街道等信息

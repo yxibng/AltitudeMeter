@@ -16,8 +16,7 @@ struct SettingsView: View {
     @ObservedObject var dataModel: AltitudeDataModel
 
     @ViewBuilder
-    private func makeLeadingView(imageName: String, title: String) -> some View
-    {
+    private func makeLeadingView(imageName: String, title: String) -> some View {
         HStack {
             ZStack {
                 Circle().fill(Color.gray.opacity(0.2))

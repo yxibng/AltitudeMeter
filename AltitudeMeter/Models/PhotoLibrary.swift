@@ -40,11 +40,9 @@ class PhotoLibrary {
     }
 
     static func saveImage(_ image: UIImage, location: CLLocationCoordinate2D?)
-        async throws
-    {
+        async throws {
         if await PHPhotoLibrary.requestAuthorization(for: .readWrite)
-            == .authorized
-        {
+            == .authorized {
             try await withCheckedThrowingContinuation { continuation in
                 PHPhotoLibrary.shared().performChanges(
                     {
@@ -60,7 +58,7 @@ class PhotoLibrary {
                             )
                         }
                     },
-                    completionHandler: { success, error in
+                    completionHandler: { success, _ in
                         if success {
                             continuation.resume()
                         } else {

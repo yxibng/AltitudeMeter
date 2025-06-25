@@ -10,7 +10,7 @@ import SwiftUI
 
 class CameraViewModel: ObservableObject {
     static let previewImageContext = CIContext()
-    
+
     deinit {
         camera.stop()
         print("CameraViewModel deinitialized")
@@ -44,7 +44,7 @@ class CameraViewModel: ObservableObject {
             }
         }
     }
-    
+
     func handleCameraPhotos() async {
         let photoStream = camera.photoStream
         for await photo in photoStream {

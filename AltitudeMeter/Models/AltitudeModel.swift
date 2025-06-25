@@ -24,8 +24,7 @@ private class CoordinateFormatter {
 
     // 格式化单个坐标（纬度/经度）
     private static func formatCoordinate(value: Double, isLatitude: Bool)
-        -> String
-    {
+        -> String {
         // 确定方向（N/S 或 E/W）
         let direction: String
         let absValue = abs(value)
@@ -93,9 +92,9 @@ enum AltitudeUnitType: String, CaseIterable, Identifiable, Codable {
 }
 
 enum GpsDisplayType: String, CaseIterable, Identifiable, Codable {
-    //度分秒
+    // 度分秒
     case dms
-    //小数
+    // 小数
     case decimal
 
     var id: String { self.rawValue }
@@ -105,7 +104,7 @@ enum PressureUnitType: String, CaseIterable, Identifiable, Codable {
     case kPa  // 千帕
     case mBar  // 毫巴 1 kPa = 10 mbar
     case atm  // 大气压 1atm=101325Pa=101.325kPa
-    case mmHg  //毫米汞柱 1 kPa ≈ 7.5006 mmHg
+    case mmHg  // 毫米汞柱 1 kPa ≈ 7.5006 mmHg
     var id: String { self.rawValue }
 }
 
@@ -167,8 +166,7 @@ struct Preferences: Codable {
             let preferences = try? JSONDecoder().decode(
                 Preferences.self,
                 from: Data(data.utf8)
-            )
-        {
+            ) {
             self = preferences
         }
     }
@@ -402,6 +400,6 @@ class AltitudeDataModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .assign(to: \.degrees, on: self)
             .store(in: &cancellables)
-        
+
     }
 }
