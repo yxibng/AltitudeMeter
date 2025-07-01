@@ -9,7 +9,6 @@ import AVFoundation
 import SwiftUI
 
 class CameraViewModel: ObservableObject {
-    
     enum CameraType {
         case photo
         case video
@@ -21,7 +20,7 @@ class CameraViewModel: ObservableObject {
     }
 
     private let camera = Camera()
-    
+
     var session: AVCaptureSession {
         camera.captureSession
     }
@@ -36,29 +35,27 @@ class CameraViewModel: ObservableObject {
             await handleCameraPhotos()
         }
     }
-    
+
     func takePhoto() {
         self.camera.takePhoto()
     }
-    
-    
+
     func start() async {
        await self.camera.start()
     }
-    
+
     func stop() {
         self.camera.stop()
     }
-    
-    
+
     func switchCamera() {
         camera.switchCaptureDevice()
     }
-    
+
     func setFocusPoint(_ point: CGPoint) {
         camera.setFocusPoint(point)
     }
-    
+
     func setDeviceOrientation(_ orientation: UIDeviceOrientation) {
         camera.deviceOrientation = orientation
     }
@@ -66,7 +63,7 @@ class CameraViewModel: ObservableObject {
     func setZoomFactor(_ zoomFactor: CGFloat) {
         camera.setZoomFactor(zoomFactor)
     }
-    
+
     private func handleVideoAuthorization() async {
         let authorizationStatus = await AVCaptureDevice.requestAccess(
             for: .video
@@ -86,4 +83,3 @@ class CameraViewModel: ObservableObject {
         }
     }
 }
-

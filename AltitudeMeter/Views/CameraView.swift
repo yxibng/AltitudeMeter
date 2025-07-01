@@ -16,11 +16,11 @@ enum Theme {
 struct CameraView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var altitudeDataMode: AltitudeDataModel
-    @StateObject var cameraViewModel = CameraViewModel()
+    @StateObject private var cameraViewModel = CameraViewModel()
 
-    @State var snpashot: UIImage?
-    @State var showSnapshot = false
-    @State var showNoAuthAlert = false
+    @State private var snpashot: UIImage?
+    @State private var showSnapshot = false
+    @State private var showNoAuthAlert = false
 
     @StateObject private var orientationManager = OrientationManager()
 
@@ -132,14 +132,14 @@ struct CameraView: View {
     var previewWithLabels: some View {
         GeometryReader { geometry in
             ZStack {
-                AVCaptureVideoPreviewView(session: self.cameraViewModel.session,
+                AVCaptureVideoPreviewView(session: cameraViewModel.session,
                                           videoOrientation: .portrait) { tapPoint, focusPoint in
                     print("tapPoint: \(tapPoint), focusPoint: \(focusPoint)")
-                    self.focusSpot = FocusLocation(position: tapPoint)
-                    self.cameraViewModel.setFocusPoint(focusPoint)
-                    self.showFocusIndicator = true
+                    focusSpot = FocusLocation(position: tapPoint)
+                    cameraViewModel.setFocusPoint(focusPoint)
+                    showFocusIndicator = true
                 }
-                FixedPositionRotatedView(angle: self.rotationAngle.degrees) {
+                FixedPositionRotatedView(angle: rotationAngle.degrees) {
                     watermark
                 }.frame(
                     width: geometry.size.width,
@@ -209,17 +209,17 @@ struct CameraView: View {
                     cameraViewModel.stop()
                 }
                 .onChange(of: orientationManager.deviceOrientation) { newValue in
-                    self.cameraViewModel.setDeviceOrientation(newValue)
+                    cameraViewModel.setDeviceOrientation(newValue)
                     if newValue == .portrait {
-                        self.rotationAngle = .zero
+                        rotationAngle = .zero
                     } else if newValue == .landscapeLeft {
-                        self.rotationAngle = .degrees(90)
+                        rotationAngle = .degrees(90)
                     } else if newValue == .landscapeRight {
-                        self.rotationAngle = .degrees(270)
+                        rotationAngle = .degrees(270)
                     } else if newValue == .portraitUpsideDown {
-                        self.rotationAngle = .degrees(180)
+                        rotationAngle = .degrees(180)
                     } else {
-                        self.rotationAngle = .zero
+                        rotationAngle = .zero
                     }
                 }
 
@@ -257,7 +257,7 @@ struct CameraView: View {
             } message: {
                 Text("请在设置中开启相机权限")
             }.onChange(of: cameraViewModel.photo) { newValue in
-                if self.showSnapshot { return }
+                if showSnapshot { return }
                 guard let photo = newValue else { return }
                 let sourceImage = photo.cropToAspectRatio(
                     aspectRatio
@@ -265,17 +265,15 @@ struct CameraView: View {
                 var width: CGFloat {
                     if orientationManager.deviceOrientation.isLandscape {
                         return UIScreen.screenSize.width * aspectRatio
-                    } else {
-                        return UIScreen.screenSize.width
                     }
+                    return UIScreen.screenSize.width
                 }
 
                 var height: CGFloat {
                     if orientationManager.deviceOrientation.isLandscape {
                         return UIScreen.screenSize.width
-                    } else {
-                        return UIScreen.screenSize.width / aspectRatio
                     }
+                    return UIScreen.screenSize.width / aspectRatio
                 }
 
                 let watermarkImage = watermark.asImage(
@@ -311,8 +309,8 @@ struct CameraView: View {
                 }
                 let image = UIImage(cgImage: cgImage)
 
-                self.snpashot = image
-                self.showSnapshot = true
+                snpashot = image
+                showSnapshot = true
             }
     }
 }

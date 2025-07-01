@@ -7,73 +7,71 @@
 
 import AVFoundation
 import CoreImage
-import UIKit
 import os.log
+import UIKit
 
 class Camera: NSObject {
-    
     enum CameraType {
         case photo
         case video
     }
 
+
     var cameraType: CameraType = .photo {
         didSet {
             if cameraType == .video {
                 self.sessionQueue.async { [weak self] in
-                    guard let self = self else { return }
-                    self.captureSession.sessionPreset = .hd1920x1080
-                    self.captureSession.beginConfiguration()
-                    defer { self.captureSession.commitConfiguration() }
-                    //add audio input if it doesn't exist
-                    if let audioDevice = self.audioDevice,
+                    guard let self else { return }
+                    captureSession.sessionPreset = .hd1920x1080
+                    captureSession.beginConfiguration()
+                    defer { captureSession.commitConfiguration() }
+                    // add audio input if it doesn't exist
+                    if let audioDevice,
                        let audioInput = try? AVCaptureDeviceInput(device: audioDevice) {
-                        if self.captureSession.inputs.contains(audioInput),
-                           self.captureSession.canAddInput(audioInput) {
-                            self.captureSession.addInput(audioInput)
-                            self.audioDeviceInput = audioInput
+                        if captureSession.inputs.contains(audioInput),
+                           captureSession.canAddInput(audioInput) {
+                            captureSession.addInput(audioInput)
+                            audioDeviceInput = audioInput
                         }
                     }
-                    //remove photo output if it exists
-                    if let photoOutput = photoOutput {
-                        self.captureSession.removeOutput(photoOutput)
+                    // remove photo output if it exists
+                    if let photoOutput {
+                        captureSession.removeOutput(photoOutput)
                     }
-                    //add video output if it doesn't exist
-                    if self.captureSession.canAddOutput(videoOutput) {
+                    // add video output if it doesn't exist
+                    if captureSession.canAddOutput(videoOutput) {
                         captureSession.addOutput(videoOutput)
                     }
-                    //add audio output if it doesn't exist
-                    if self.captureSession.canAddOutput(audioOutput) {
+                    // add audio output if it doesn't exist
+                    if captureSession.canAddOutput(audioOutput) {
                         captureSession.addOutput(audioOutput)
                     }
                 }
             } else {
                 self.sessionQueue.async { [weak self] in
-                    guard let self = self else { return }
-                    self.captureSession.beginConfiguration()
-                    defer { self.captureSession.commitConfiguration() }
-                    self.captureSession.sessionPreset = .photo
-                    //remove audio input if it exists
-                    if let audioDeviceInput = self.audioDeviceInput {
-                        if self.captureSession.inputs.contains(audioDeviceInput) {
-                            self.captureSession.removeInput(audioDeviceInput)
+                    guard let self else { return }
+                    captureSession.beginConfiguration()
+                    defer { captureSession.commitConfiguration() }
+                    captureSession.sessionPreset = .photo
+                    // remove audio input if it exists
+                    if let audioDeviceInput {
+                        if captureSession.inputs.contains(audioDeviceInput) {
+                            captureSession.removeInput(audioDeviceInput)
                         }
                     }
-                    //remove audio video output if it exists
-                    self.captureSession.removeOutput(videoOutput)
-                    self.captureSession.removeOutput(audioOutput)
-                    //add photo output if it doesn't exist
-                    if let photoOutput = photoOutput {
-                        if self.captureSession.canAddOutput(photoOutput) {
-                            self.captureSession.addOutput(photoOutput)
+                    // remove audio video output if it exists
+                    captureSession.removeOutput(videoOutput)
+                    captureSession.removeOutput(audioOutput)
+                    // add photo output if it doesn't exist
+                    if let photoOutput {
+                        if captureSession.canAddOutput(photoOutput) {
+                            captureSession.addOutput(photoOutput)
                         }
                     }
                 }
             }
         }
     }
-    
-    
     deinit {
         print("Camera deinitialized")
     }
@@ -84,7 +82,7 @@ class Camera: NSObject {
     private var photoOutput: AVCapturePhotoOutput?
     private lazy var videoOutput: AVCaptureVideoDataOutput = {
         let videoOutput = AVCaptureVideoDataOutput()
-        videoOutput.setSampleBufferDelegate(self,queue: DispatchQueue(label: "VideoDataOutputQueue"))
+        videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "VideoDataOutputQueue"))
         videoOutput.videoSettings = [
             kCVPixelBufferPixelFormatTypeKey as String: Int(kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange)
         ]
@@ -95,13 +93,13 @@ class Camera: NSObject {
         audioOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "AudioDataOutputQueue"))
         return audioOutput
     }()
-    private let sessionQueue: DispatchQueue = DispatchQueue(label: "session queue")
+    private let sessionQueue = DispatchQueue(label: "session queue")
     private var allCaptureDevices: [AVCaptureDevice] {
         AVCaptureDevice.DiscoverySession(
             deviceTypes: [
                 .builtInTrueDepthCamera, .builtInDualCamera,
                 .builtInDualWideCamera, .builtInWideAngleCamera,
-                .builtInDualWideCamera
+                .builtInDualWideCamera,
             ],
             mediaType: .video,
             position: .unspecified
@@ -109,7 +107,7 @@ class Camera: NSObject {
     }
 
     private var audioDevice: AVCaptureDevice? {
-        return AVCaptureDevice.default(for: .audio)
+        AVCaptureDevice.default(for: .audio)
     }
 
     private var frontCaptureDevices: [AVCaptureDevice] {
@@ -143,10 +141,10 @@ class Camera: NSObject {
             .filter({ !$0.isSuspended })
     }
 
-    //video capture device
+    // video capture device
     private var captureDevice: AVCaptureDevice? {
         didSet {
-            guard let captureDevice = captureDevice else { return }
+            guard let captureDevice else { return }
             logger.debug("Using capture device: \(captureDevice.localizedName)")
             sessionQueue.async {
                 self.updateSessionForCaptureDevice(captureDevice)
@@ -154,32 +152,31 @@ class Camera: NSObject {
         }
     }
 
-    //current device orientation
+    // current device orientation
     var deviceOrientation: UIDeviceOrientation = .portrait {
         didSet {
             self.sessionQueue.async { [weak self] in
-                guard let self = self else { return }
+                guard let self else { return }
                 // update video output connection orientation
                 if let videoOutputConnection = videoOutput.connection(with: .video),
                    videoOutputConnection.isVideoOrientationSupported {
-                    videoOutputConnection.videoOrientation = self.deviceOrientation.avCaptureVideoOrientation ?? .portrait
+                    videoOutputConnection.videoOrientation = deviceOrientation.avCaptureVideoOrientation ?? .portrait
                 }
             }
         }
     }
-        
-    
+
     var isRunning: Bool {
         captureSession.isRunning
     }
 
     var isUsingFrontCaptureDevice: Bool {
-        guard let captureDevice = captureDevice else { return false }
+        guard let captureDevice else { return false }
         return frontCaptureDevices.contains(captureDevice)
     }
 
     var isUsingBackCaptureDevice: Bool {
-        guard let captureDevice = captureDevice else { return false }
+        guard let captureDevice else { return false }
         return backCaptureDevices.contains(captureDevice)
     }
 
@@ -221,7 +218,6 @@ class Camera: NSObject {
     private func configureCaptureSession(
         completionHandler: (_ success: Bool) -> Void
     ) {
-
         var success = false
 
         self.captureSession.beginConfiguration()
@@ -232,7 +228,7 @@ class Camera: NSObject {
         }
 
         guard
-            let captureDevice = captureDevice,
+            let captureDevice,
             let deviceInput = try? AVCaptureDeviceInput(device: captureDevice)
         else {
             logger.error("Failed to obtain video input.")
@@ -286,13 +282,12 @@ class Camera: NSObject {
                 return false
             }
         }
-        
+
         if self.cameraType == .photo {
             return await _checkAuthorization(type: .video)
-        } else {
-            _ = await _checkAuthorization(type: .audio)
-            return await _checkAuthorization(type: .video)
         }
+        _ = await _checkAuthorization(type: .audio)
+        return await _checkAuthorization(type: .video)
     }
 
     private func deviceInputFor(device: AVCaptureDevice?)
@@ -300,7 +295,7 @@ class Camera: NSObject {
         guard let validDevice = device else { return nil }
         do {
             return try AVCaptureDeviceInput(device: validDevice)
-        } catch let error {
+        } catch {
             logger.error(
                 "Error getting capture device input: \(error.localizedDescription)"
             )
@@ -319,7 +314,7 @@ class Camera: NSObject {
                 captureSession.removeInput(deviceInput)
             }
         }
-        
+
         if let deviceInput = deviceInputFor(device: captureDevice) {
             if !captureSession.inputs.contains(deviceInput),
                captureSession.canAddInput(deviceInput) {
@@ -342,7 +337,6 @@ class Camera: NSObject {
     }
 
     func start() async {
-
         let authorized = await checkAuthorization()
         guard authorized else {
             logger.error("Camera access was not authorized.")
@@ -352,16 +346,16 @@ class Camera: NSObject {
         if isCaptureSessionConfigured {
             if !captureSession.isRunning {
                 sessionQueue.async { [weak self] in
-                    guard let self = self else { return }
-                    self.captureSession.startRunning()
+                    guard let self else { return }
+                    captureSession.startRunning()
                 }
             }
             return
         }
 
         sessionQueue.async { [weak self] in
-            guard let self = self else { return }
-            self.configureCaptureSession { success in
+            guard let self else { return }
+            configureCaptureSession { success in
                 guard success else { return }
                 self.captureSession.startRunning()
             }
@@ -369,7 +363,6 @@ class Camera: NSObject {
     }
 
     func stop() {
-        
         guard isCaptureSessionConfigured else { return }
         if captureSession.isRunning {
             sessionQueue.async {
@@ -379,7 +372,7 @@ class Camera: NSObject {
     }
 
     func switchCaptureDevice() {
-        if let captureDevice = captureDevice,
+        if let captureDevice,
            let index = availableCaptureDevices.firstIndex(of: captureDevice) {
             let nextIndex = (index + 1) % availableCaptureDevices.count
             self.captureDevice = availableCaptureDevices[nextIndex]
@@ -432,14 +425,13 @@ class Camera: NSObject {
         guard let photoOutput = self.photoOutput else { return }
 
         sessionQueue.async {
-
             var photoSettings = AVCapturePhotoSettings()
             if photoOutput.availablePhotoCodecTypes.contains(.hevc) {
                 photoSettings = AVCapturePhotoSettings(format: [
                     AVVideoCodecKey: AVVideoCodecType.hevc
                 ])
             }
-            
+
             let isFlashAvailable =
             self.videoDeviceInput?.device.isFlashAvailable ?? false
             photoSettings.flashMode = isFlashAvailable ? .auto : .off
@@ -448,7 +440,7 @@ class Camera: NSObject {
                 .availablePreviewPhotoPixelFormatTypes.first {
                 photoSettings.previewPhotoFormat = [
                     kCVPixelBufferPixelFormatTypeKey as String:
-                        previewPhotoPixelFormatType
+                        previewPhotoPixelFormatType,
                 ]
             }
             photoSettings.photoQualityPrioritization = .balanced
@@ -460,7 +452,7 @@ class Camera: NSObject {
                     photoOutputVideoConnection.videoOrientation =
                     videoOrientation
                 }
-                
+
                 if photoOutputVideoConnection.isVideoMirroringSupported {
                     photoOutputVideoConnection.isVideoMirrored =
                     self.isUsingFrontCaptureDevice
@@ -473,14 +465,12 @@ class Camera: NSObject {
 }
 
 extension Camera: AVCapturePhotoCaptureDelegate {
-
     func photoOutput(
-        _ output: AVCapturePhotoOutput,
+        _: AVCapturePhotoOutput,
         didFinishProcessingPhoto photo: AVCapturePhoto,
         error: Error?
     ) {
-
-        if let error = error {
+        if let error {
             logger.error("Error capturing photo: \(error.localizedDescription)")
             return
         }
@@ -490,13 +480,11 @@ extension Camera: AVCapturePhotoCaptureDelegate {
 }
 
 extension Camera: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAudioDataOutputSampleBufferDelegate {
-
     func captureOutput(
-        _ output: AVCaptureOutput,
-        didOutput sampleBuffer: CMSampleBuffer,
-        from connection: AVCaptureConnection
+        _: AVCaptureOutput,
+        didOutput _: CMSampleBuffer,
+        from _: AVCaptureConnection
     ) {
-
     }
 }
 
