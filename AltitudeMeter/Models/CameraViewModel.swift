@@ -9,43 +9,74 @@ import AVFoundation
 import SwiftUI
 
 class CameraViewModel: ObservableObject {
-    static let previewImageContext = CIContext()
+    
+    enum CameraType {
+        case photo
+        case video
+    }
 
     deinit {
         camera.stop()
         print("CameraViewModel deinitialized")
     }
 
-    let camera = Camera()
-    @Published var videoFrame: Image?
+    private let camera = Camera()
+    
+    var session: AVCaptureSession {
+        camera.captureSession
+    }
+
     @Published var photo: CIImage?
     @Published var showNoAuthorizationAlert = false
     init() {
         Task {
-            await handleCameraPreviews()
+            await handleVideoAuthorization()
         }
         Task {
             await handleCameraPhotos()
         }
     }
-    func handleCameraPreviews() async {
+    
+    func takePhoto() {
+        self.camera.takePhoto()
+    }
+    
+    
+    func start() async {
+       await self.camera.start()
+    }
+    
+    func stop() {
+        self.camera.stop()
+    }
+    
+    
+    func switchCamera() {
+        camera.switchCaptureDevice()
+    }
+    
+    func setFocusPoint(_ point: CGPoint) {
+        camera.setFocusPoint(point)
+    }
+    
+    func setDeviceOrientation(_ orientation: UIDeviceOrientation) {
+        camera.deviceOrientation = orientation
+    }
+
+    func setZoomFactor(_ zoomFactor: CGFloat) {
+        camera.setZoomFactor(zoomFactor)
+    }
+    
+    private func handleVideoAuthorization() async {
         let authorizationStatus = await AVCaptureDevice.requestAccess(
             for: .video
         )
         Task { @MainActor in
             self.showNoAuthorizationAlert = !authorizationStatus
         }
-
-        let imageStream = camera.previewStream
-            .map { $0.image }
-        for await image in imageStream {
-            Task { @MainActor in
-                videoFrame = image
-            }
-        }
     }
 
-    func handleCameraPhotos() async {
+    private func handleCameraPhotos() async {
         let photoStream = camera.photoStream
         for await photo in photoStream {
             Task {
@@ -56,34 +87,3 @@ class CameraViewModel: ObservableObject {
     }
 }
 
-private struct PhotoData {
-    var thumbnailImage: Image
-    var thumbnailSize: (width: Int, height: Int)
-    var imageData: Data
-    var imageSize: (width: Int, height: Int)
-}
-
-extension CIImage {
-    fileprivate var image: Image? {
-        let ciContext = CameraViewModel.previewImageContext
-        guard let cgImage = ciContext.createCGImage(self, from: self.extent)
-        else { return nil }
-        return Image(decorative: cgImage, scale: 1, orientation: .up)
-    }
-}
-
-extension Image.Orientation {
-
-    fileprivate init(_ cgImageOrientation: CGImagePropertyOrientation) {
-        switch cgImageOrientation {
-        case .up: self = .up
-        case .upMirrored: self = .upMirrored
-        case .down: self = .down
-        case .downMirrored: self = .downMirrored
-        case .left: self = .left
-        case .leftMirrored: self = .leftMirrored
-        case .right: self = .right
-        case .rightMirrored: self = .rightMirrored
-        }
-    }
-}

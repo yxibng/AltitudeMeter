@@ -57,7 +57,7 @@ struct CameraView: View {
             }
             Spacer()
             Button {
-                cameraViewModel.camera.takePhoto()
+                cameraViewModel.takePhoto()
             } label: {
                 ZStack {
                     Circle()
@@ -78,7 +78,7 @@ struct CameraView: View {
             makeButton(
                 imageName: "arrow.trianglehead.2.clockwise.rotate.90.camera"
             ) {
-                cameraViewModel.camera.switchCaptureDevice()
+                cameraViewModel.switchCamera()
             }
         }
         .padding(EdgeInsets(top: 10, leading: 32, bottom: 0, trailing: 32))
@@ -132,11 +132,11 @@ struct CameraView: View {
     var previewWithLabels: some View {
         GeometryReader { geometry in
             ZStack {
-                AVCaptureVideoPreviewView(session: self.cameraViewModel.camera.captureSession,
+                AVCaptureVideoPreviewView(session: self.cameraViewModel.session,
                                           videoOrientation: .portrait) { tapPoint, focusPoint in
                     print("tapPoint: \(tapPoint), focusPoint: \(focusPoint)")
                     self.focusSpot = FocusLocation(position: tapPoint)
-                    self.cameraViewModel.camera.setFocusPoint(focusPoint)
+                    self.cameraViewModel.setFocusPoint(focusPoint)
                     self.showFocusIndicator = true
                 }
                 FixedPositionRotatedView(angle: self.rotationAngle.degrees) {
@@ -179,7 +179,7 @@ struct CameraView: View {
                     Theme.maxZoomFactor
                 )
                 lastScale = zoomFactor
-                cameraViewModel.camera.setZoomFactor(zoomFactor)
+                cameraViewModel.setZoomFactor(zoomFactor)
             }
             .onEnded { _ in
                 // 重置参考值
@@ -200,16 +200,16 @@ struct CameraView: View {
                     print("CameraView onAppear")
                     orientationManager.start(interval: 1 / 30.0)
                     Task {
-                        await cameraViewModel.camera.start()
+                        await cameraViewModel.start()
                     }
                 }
                 .onDisappear {
                     print("CameraView onDisappear")
                     orientationManager.stop()
-                    cameraViewModel.camera.stop()
+                    cameraViewModel.stop()
                 }
                 .onChange(of: orientationManager.deviceOrientation) { newValue in
-
+                    self.cameraViewModel.setDeviceOrientation(newValue)
                     if newValue == .portrait {
                         self.rotationAngle = .zero
                     } else if newValue == .landscapeLeft {
