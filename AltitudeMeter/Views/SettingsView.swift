@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct SettingsView: View {
-
     @State private var altitudeUnit: AltitudeUnitType = .meter
     @State private var gpsDisplayType: GpsDisplayType = .dms
     @State private var pressureUnit: PressureUnitType = .kPa
@@ -103,7 +102,6 @@ struct SettingsView: View {
                 )
                 .fixedSize()
             }
-
         }
     }
 

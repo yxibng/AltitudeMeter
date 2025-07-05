@@ -22,12 +22,11 @@ class Camera: NSObject {
         case photo
         case video
     }
-    
+
     enum BufferType {
         case video
         case audio
     }
-    
 
     var cameraType: CameraType = .photo {
         didSet {
@@ -37,7 +36,7 @@ class Camera: NSObject {
                     captureSession.beginConfiguration()
                     defer {
                         captureSession.commitConfiguration()
-                        self.videoSize = self.captureDevice?.resolution ?? .zero
+                        videoSize = captureDevice?.resolution ?? .zero
                     }
                     captureSession.sessionPreset = .hd1920x1080
                     // add audio input if it doesn't exist
@@ -68,8 +67,8 @@ class Camera: NSObject {
                     captureSession.beginConfiguration()
                     defer {
                         captureSession.commitConfiguration()
-                        self.videoSize = self.captureDevice?.resolution ?? .zero
-                        print("type photo, videoSize = \(self.videoSize)")
+                        videoSize = captureDevice?.resolution ?? .zero
+                        print("type photo, videoSize = \(videoSize)")
                     }
                     captureSession.sessionPreset = .photo
                     // remove audio input if it exists

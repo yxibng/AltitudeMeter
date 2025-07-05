@@ -11,9 +11,7 @@ struct FocusIndicator: View {
     @State private var animate = false
 
     var body: some View {
-
         GeometryReader { geometry in
-
             Rectangle()
                 .stroke(lineWidth: 1.0)
                 .foregroundColor(.yellow)

@@ -5,8 +5,8 @@
 //  Created by yxibng on 2025/7/1.
 //
 
-import UIKit
 import AVFoundation
+import UIKit
 
 class AssetWritter: NSObject {
     private var assetWriter: AVAssetWriter?
@@ -21,17 +21,16 @@ class AssetWritter: NSObject {
         }
     }
     private var startTime: CMTime = .zero
-    
+
     typealias PixelBufferFilter = (CVPixelBuffer) -> CVPixelBuffer
-    var pixelBufferFilter: PixelBufferFilter? = nil
-    
+    var pixelBufferFilter: PixelBufferFilter?
+
     init(pixelBufferFilter: PixelBufferFilter? = nil) {
         self.pixelBufferFilter = pixelBufferFilter
         super.init()
     }
-    
+
     private func setup(outputURL: URL, videoSize: CGSize) {
-        
         try? FileManager.default.removeItem(at: outputURL)  // 删除旧文件
         do {
             assetWriter = try AVAssetWriter(outputURL: outputURL, fileType: .mov)
@@ -39,52 +38,51 @@ class AssetWritter: NSObject {
             print("Error creating AVAssetWriter: \(error)")
             return
         }
-        
+
         let videoSettings: [String: Any] = [
             AVVideoCodecKey: AVVideoCodecType.h264,
             AVVideoWidthKey: videoSize.width,
             AVVideoHeightKey: videoSize.height,
-            AVVideoScalingModeKey: AVVideoScalingModeResizeAspectFill
+            AVVideoScalingModeKey: AVVideoScalingModeResizeAspectFill,
         ]
         videoWriterInput = AVAssetWriterInput(mediaType: .video, outputSettings: videoSettings)
         videoWriterInput?.expectsMediaDataInRealTime = true
-        
+
         // Pixel buffer adapter for optimal performance
         let pixelBufferAttributes: [String: Any] = [
             kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange,
             kCVPixelBufferWidthKey as String: videoSize.width,
-            kCVPixelBufferHeightKey as String: videoSize.height
+            kCVPixelBufferHeightKey as String: videoSize.height,
         ]
-        
-        if let videoWriterInput = videoWriterInput {
+
+        if let videoWriterInput {
             pixelBufferAdapter = AVAssetWriterInputPixelBufferAdaptor(
                 assetWriterInput: videoWriterInput,
                 sourcePixelBufferAttributes: pixelBufferAttributes
             )
         }
-        
+
         // Audio input configuration
         let audioSettings: [String: Any] = [
             AVFormatIDKey: kAudioFormatMPEG4AAC,
-            AVSampleRateKey: 44100,
+            AVSampleRateKey: 44_100,
             AVNumberOfChannelsKey: 2,
-            AVEncoderBitRateKey: 128000
+            AVEncoderBitRateKey: 128_000,
         ]
-        
+
         audioWriterInput = AVAssetWriterInput(mediaType: .audio, outputSettings: audioSettings)
         audioWriterInput?.expectsMediaDataInRealTime = true
-        
+
         // Add inputs to writer
-        if let videoWriterInput = videoWriterInput, assetWriter?.canAdd(videoWriterInput) == true {
+        if let videoWriterInput, assetWriter?.canAdd(videoWriterInput) == true {
             assetWriter?.add(videoWriterInput)
         }
-        
-        if let audioWriterInput = audioWriterInput, assetWriter?.canAdd(audioWriterInput) == true {
+
+        if let audioWriterInput, assetWriter?.canAdd(audioWriterInput) == true {
             assetWriter?.add(audioWriterInput)
         }
-        
     }
-    
+
     func startRecording(outputURL: URL, videoSize: CGSize) {
         if isRecording {
             print("录制已在进行中")
@@ -98,37 +96,37 @@ class AssetWritter: NSObject {
         }
         self.isRecording = true
     }
-    
+
     func stopRecording(completion: @escaping (URL?) -> Void) {
         if !isRecording {
             print("录制未开始")
             completion(nil)
             return
         }
-        
+
         let url = assetWriter?.outputURL
         videoWriterInput?.markAsFinished()
         audioWriterInput?.markAsFinished()
         assetWriter?.finishWriting { [weak self] in
-            guard let self = self else { return }
-            if self.assetWriter?.status == .completed {
+            guard let self else { return }
+            if assetWriter?.status == .completed {
                 print("录制完成，文件保存到: \(url?.absoluteString ?? "未知路径")")
                 completion(url)
             } else {
-                print("录制失败: \(self.assetWriter?.error?.localizedDescription ?? "未知错误")")
+                print("录制失败: \(assetWriter?.error?.localizedDescription ?? "未知错误")")
                 completion(nil)
             }
-            self.assetWriter = nil
-            self.videoWriterInput = nil
-            self.audioWriterInput = nil
-            self.isRecording = false
+            assetWriter = nil
+            videoWriterInput = nil
+            audioWriterInput = nil
+            isRecording = false
         }
     }
-    
+
     func writeAudio(sampleBuffer: CMSampleBuffer) {
         if !isRecording { return }
         // Handle audio sample
-        if let audioWriterInput = audioWriterInput,
+        if let audioWriterInput,
            audioWriterInput.isReadyForMoreMediaData {
             let result = audioWriterInput.append(sampleBuffer)
             if !result {
@@ -136,10 +134,8 @@ class AssetWritter: NSObject {
             }
         }
     }
-    
-    
+
     func writeVideo(sampleBuffer: CMSampleBuffer) {
-        
         if !isRecording { return }
         // Start session if needed
         if startTime == .zero {
@@ -147,7 +143,7 @@ class AssetWritter: NSObject {
             assetWriter?.startSession(atSourceTime: startTime)
         }
         // Handle video sample
-        if let videoWriterInput = videoWriterInput,
+        if let videoWriterInput,
            videoWriterInput.isReadyForMoreMediaData {
             // Try to append pixel buffer directly for better performance
             if let adapter = pixelBufferAdapter,

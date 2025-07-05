@@ -10,7 +10,6 @@ import CoreLocation
 import SwiftUI
 
 struct SnapshotView: View {
-
     struct Layout {
         static let bottomHeight: CGFloat = 62
         static let buttonWidth: CGFloat = 32
@@ -19,9 +18,9 @@ struct SnapshotView: View {
     }
 
     @Environment(\.dismiss) private var dismiss
-    @State var showNoAuthAlert = false
-    @State var showSavedToast = false
-    @State var showShareSheet = false
+    @State private var showNoAuthAlert = false
+    @State private var showSavedToast = false
+    @State private var showShareSheet = false
 
     var bottomView: some View {
         ZStack {
@@ -34,7 +33,7 @@ struct SnapshotView: View {
                             location: coordinate
                         )
                         Task { @MainActor in
-                            self.showSavedToast = true
+                            showSavedToast = true
                         }
                     } catch {
                         print("Error saving image: \(error)")
@@ -51,7 +50,6 @@ struct SnapshotView: View {
                     .resizable()
                     .scaledToFit()
                     .tint(.white)
-
             }.frame(
                 width: Layout.saveButtonWidth,
                 height: Layout.saveButtonWidth
@@ -65,7 +63,6 @@ struct SnapshotView: View {
                         .resizable()
                         .scaledToFit()
                         .tint(.white)
-
                 }
                 .frame(width: Layout.buttonWidth, height: Layout.buttonWidth)
 
@@ -92,7 +89,7 @@ struct SnapshotView: View {
             Image(uiImage: image)
                 .resizable()
                 .scaledToFill()
-                .aspectRatio(image.size.width/image.size.height, contentMode: .fit)
+                .aspectRatio(image.size.width / image.size.height, contentMode: .fit)
                 .background(Color.red)
                 .clipped()
             bottomView
@@ -120,6 +117,5 @@ struct SnapshotView: View {
                 AlertToast(type: .regular, title: "保存成功")
             }
             .shareSheet(show: $showShareSheet, items: [image])
-
     }
 }

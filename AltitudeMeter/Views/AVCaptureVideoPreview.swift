@@ -5,12 +5,11 @@
 //  Created by yxibng on 2025/6/23.
 //
 
-import UIKit
 import AVFoundation
 import SwiftUI
+import UIKit
 
 class AVCaptureVideoPreview: UIView {
-
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupPreviewLayer()
@@ -28,7 +27,7 @@ class AVCaptureVideoPreview: UIView {
         tapAction?(touchPoint, focusPoint)
     }
 
-    required init?(coder: NSCoder) {
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
@@ -38,7 +37,7 @@ class AVCaptureVideoPreview: UIView {
 
     var session: AVCaptureSession? {
         get {
-            return previewLayer.session
+            previewLayer.session
         }
         set {
             previewLayer.session = newValue
@@ -47,7 +46,7 @@ class AVCaptureVideoPreview: UIView {
 
     var videoOrientaion: AVCaptureVideoOrientation {
         get {
-            return previewLayer.connection?.videoOrientation ?? .portrait
+            previewLayer.connection?.videoOrientation ?? .portrait
         }
         set {
             if let connection = previewLayer.connection, connection.isVideoOrientationSupported {
@@ -57,10 +56,10 @@ class AVCaptureVideoPreview: UIView {
     }
 
     override class var layerClass: AnyClass {
-        return AVCaptureVideoPreviewLayer.self
+        AVCaptureVideoPreviewLayer.self
     }
     var previewLayer: AVCaptureVideoPreviewLayer {
-        return layer as! AVCaptureVideoPreviewLayer
+        layer as! AVCaptureVideoPreviewLayer
     }
 }
 
@@ -72,14 +71,14 @@ struct AVCaptureVideoPreviewView: UIViewRepresentable {
     typealias TapAction = (CGPoint, CGPoint) -> Void
     var tapAction: TapAction?
 
-    func makeUIView(context: Context) -> AVCaptureVideoPreview {
+    func makeUIView(context _: Context) -> AVCaptureVideoPreview {
         let preview = AVCaptureVideoPreview()
         preview.session = session
         preview.videoOrientaion = videoOrientation
         return preview
     }
 
-    func updateUIView(_ uiView: AVCaptureVideoPreview, context: Context) {
+    func updateUIView(_ uiView: AVCaptureVideoPreview, context _: Context) {
         uiView.session = session
         uiView.videoOrientaion = videoOrientation
         uiView.tapAction = tapAction

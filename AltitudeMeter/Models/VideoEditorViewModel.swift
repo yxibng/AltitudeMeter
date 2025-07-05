@@ -5,13 +5,12 @@
 //  Created by yxibng on 2025/7/5.
 //
 
-import UIKit
 import AVKit
 import Combine
+import UIKit
 
 class VideoEditorViewModel: ObservableObject {
-    
-    private var minimumDuration: Double = 3.0 // 最小裁剪时长
+    private var minimumDuration = 3.0 // 最小裁剪时长
     var selecteRange: ClosedRange<Double> = 0.0...1.0 {
         didSet {
             let selecteDuration = (selecteRange.upperBound - selecteRange.lowerBound) * self.duration
@@ -24,10 +23,10 @@ class VideoEditorViewModel: ObservableObject {
      最短 3 秒，少于 3 秒不允许裁剪
      */
     @Published var allowedMinRangeRatio: CGFloat = 1.0
-    @Published var selectedRangeText: String = ""
-    
-    @Published var currentTimeRatio: CGFloat = 0.0 //当前进度条比例
-    
+    @Published var selectedRangeText = ""
+
+    @Published var currentTimeRatio: CGFloat = 0.0 // 当前进度条比例
+
     @Published var player: AVPlayer?
     @Published var isLoading = false
     @Published var showError = false
@@ -47,46 +46,46 @@ class VideoEditorViewModel: ObservableObject {
                 let selecteDuration = (selecteRange.upperBound - selecteRange.lowerBound) * self.duration
                 self.selectedRangeText = self.timeString(time: selecteDuration)
                 let minRangeRatio = minimumDuration / self.duration
-                self.allowedMinRangeRatio = max(0,min(1.0, minRangeRatio))
+                self.allowedMinRangeRatio = max(0, min(1.0, minRangeRatio))
             }
         }
     }
     @Published var resolution: CGSize = .zero
     @Published var bitrate: Double = 0
     @Published var mediaFormat = "未知"
-    
+
     private var playerItem: AVPlayerItem?
     private var cancellables = Set<AnyCancellable>()
     private var timeObserver: Any?
-    
+
     // 计算属性：格式化显示
     var durationText: String {
         isDurationValid ? timeString(time: duration) : "--:--"
     }
-    
+
     var currentTimeText: String {
         timeString(time: currentTime)
     }
-    
+
     var bitrateText: String {
         bitrate > 0 ? String(format: "%.1f Mbps", bitrate / 1_000_000) : "未知"
     }
-    
+
     var isDurationValid: Bool {
         duration > 0 && !duration.isNaN
     }
-    
+
     // 加载视频
     func loadVideo(url: URL) {
         reset()
         isLoading = true
-        
+
         playerItem = AVPlayerItem(url: url)
         player = AVPlayer(playerItem: playerItem)
-        
+
         setupObservers()
     }
-    
+
     // 重置状态
     private func reset() {
         player?.pause()
@@ -94,10 +93,10 @@ class VideoEditorViewModel: ObservableObject {
         playerItem = nil
         player = nil
         cancellables.removeAll()
-        if let timeObserver = timeObserver {
+        if let timeObserver {
             player?.removeTimeObserver(timeObserver)
         }
-        
+
         isLoading = false
         showError = false
         isPlaying = false
@@ -107,11 +106,11 @@ class VideoEditorViewModel: ObservableObject {
         bitrate = 0
         mediaFormat = "未知"
     }
-    
+
     // 设置观察者
     private func setupObservers() {
-        guard let playerItem = playerItem else { return }
-        
+        guard let playerItem else { return }
+
         // 监听播放状态
         player?.publisher(for: \.timeControlStatus)
             .receive(on: DispatchQueue.main)
@@ -130,47 +129,47 @@ class VideoEditorViewModel: ObservableObject {
                 }
             }
             .store(in: &cancellables)
-        
+
         // 监听视频时长
         playerItem.publisher(for: \.status)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] status in
-                guard let self = self else { return }
-                
+                guard let self else { return }
+
                 switch status {
                 case .readyToPlay:
-                    self.isLoading = false
+                    isLoading = false
                     // 获取视频时长
                     if playerItem.duration.isNumeric {
-                        self.duration = playerItem.duration.seconds
+                        duration = playerItem.duration.seconds
                     }
                 case .failed:
-                    self.isLoading = false
-                    self.showError = true
-                    self.errorMessage =
+                    isLoading = false
+                    showError = true
+                    errorMessage =
                     playerItem.error?.localizedDescription ?? "未知错误"
-                    
+
                 default:
                     break
                 }
             }
             .store(in: &cancellables)
-        
+
         // 添加时间观察器
         addPeriodicTimeObserver()
-        
+
         // 监听播放结束
         NotificationCenter.default
             .publisher(for: .AVPlayerItemDidPlayToEndTime, object: playerItem)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                guard let self = self else { return }
-                self.isPlaying = false
-                self.seek(to: self.duration * self.selecteRange.lowerBound)
+                guard let self else { return }
+                isPlaying = false
+                seek(to: duration * selecteRange.lowerBound)
             }
             .store(in: &cancellables)
     }
-    
+
     // 添加时间观察器
     private func addPeriodicTimeObserver() {
         let interval = CMTime(
@@ -181,28 +180,27 @@ class VideoEditorViewModel: ObservableObject {
             forInterval: interval,
             queue: .main
         ) { [weak self] time in
-            guard let self = self else { return }
-            self.currentTime = time.seconds
-            print("Current time: \(self.currentTime)")
-            
+            guard let self else { return }
+            currentTime = time.seconds
+            print("Current time: \(currentTime)")
+
             // 如果时长无效但视频正在播放，尝试再次获取时长
-            if !self.isDurationValid && self.isPlaying {
-                if let duration = self.player?.currentItem?.duration,
-                   duration.isNumeric
-                {
+            if !isDurationValid && isPlaying {
+                if let duration = player?.currentItem?.duration,
+                   duration.isNumeric {
                     self.duration = duration.seconds
                 }
             }
             // 如果当前时间超过右边界，自动跳转到左边界
-            let rightBound = self.duration * self.selecteRange.upperBound
+            let rightBound = duration * selecteRange.upperBound
             if currentTime >= rightBound {
-                self.seek(to: self.duration * self.selecteRange.lowerBound)
+                seek(to: duration * selecteRange.lowerBound)
             }
         }
     }
-    
+
     // MARK: - 播放控制
-    
+
     func togglePlay() {
         if player?.timeControlStatus == .playing {
             player?.pause()
@@ -210,7 +208,7 @@ class VideoEditorViewModel: ObservableObject {
             player?.play()
         }
     }
-    
+
     func play() {
         guard isDurationValid else { return }
         if player?.timeControlStatus != .playing {
@@ -218,18 +216,16 @@ class VideoEditorViewModel: ObservableObject {
         }
     }
 
-    
-    
     func pause() {
         player?.pause()
     }
-    
+
     func skip(seconds: Double) {
         guard isDurationValid else { return }
         let newTime = currentTime + seconds
         seek(to: max(0, min(newTime, duration)))
     }
-    
+
     func seek(to time: Double) {
         guard isDurationValid else { return }
         let targetTime = CMTime(seconds: time, preferredTimescale: 600)
@@ -239,7 +235,7 @@ class VideoEditorViewModel: ObservableObject {
             toleranceAfter: .zero
         )
     }
-    
+
     func seekingChanged(editingStarted: Bool) {
         if editingStarted {
             player?.pause()
@@ -248,7 +244,7 @@ class VideoEditorViewModel: ObservableObject {
             player?.play()
         }
     }
-    
+
     // 时间格式化
     func timeString(time: Double) -> String {
         guard !time.isNaN else { return "0:00" }
@@ -257,14 +253,13 @@ class VideoEditorViewModel: ObservableObject {
         let seconds = totalSeconds % 60
         return String(format: "%d:%02d", minutes, seconds)
     }
-    
+
     func cropVideo(
         sourceURL: URL,
         outputURL: URL,
         startTime: CMTime,
         endTime: CMTime
     ) async throws {
-        
         let asset = AVAsset(url: sourceURL)
         guard
             let exportSession = AVAssetExportSession(
@@ -278,9 +273,9 @@ class VideoEditorViewModel: ObservableObject {
                 userInfo: [NSLocalizedDescriptionKey: "无法创建导出会话"]
             )
         }
-        
+
         try? FileManager.default.removeItem(at: outputURL)
-        
+
         exportSession.outputURL = outputURL
         exportSession.outputFileType = .mp4
         exportSession.timeRange = CMTimeRange(start: startTime, end: endTime)

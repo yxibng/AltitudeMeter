@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct Triangle: Shape {
-
     var radius: CGFloat = 0
 
     func path(in rect: CGRect) -> Path {
@@ -50,7 +49,6 @@ struct Triangle: Shape {
 }
 
 struct Compass<Content: View>: View {
-
     @Binding var degrees: Double
     @State private var currentDegrees: Double = 0
     @ViewBuilder var makeContent: () -> Content
@@ -68,13 +66,12 @@ struct Compass<Content: View>: View {
     }
 
     private func triangleRadius(geometry: GeometryProxy) -> CGFloat {
-        return centerCricleSize(geometry: geometry).height / 2 + trianglePadding
+        centerCricleSize(geometry: geometry).height / 2 + trianglePadding
     }
 
     @State private var isAnimating = false
 
     var body: some View {
-
         GeometryReader { geometry in
             ZStack {
                 Circle()
@@ -97,7 +94,6 @@ struct Compass<Content: View>: View {
                     }
 
                 VStack {
-
                     Triangle(radius: triangleRadius(geometry: geometry))
                         .fill(Color.orange.opacity(0.5))
                         .overlay(content: {
@@ -142,7 +138,7 @@ struct Compass<Content: View>: View {
                             LinearGradient(
                                 gradient: Gradient(colors: [
                                     .orange.opacity(0.5),
-                                    .blue.opacity(0.5)
+                                    .blue.opacity(0.5),
                                 ]),
                                 startPoint: .top,
                                 endPoint: .bottom
@@ -152,7 +148,6 @@ struct Compass<Content: View>: View {
             }
             .frame(width: geometry.size.width, height: geometry.size.height)
         }
-
     }
 }
 

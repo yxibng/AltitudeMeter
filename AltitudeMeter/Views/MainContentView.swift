@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct MainContentView: View {
-
     @State private var showSettings = false
     @State private var showCamera = false
     @State private var degree: Double = 0
@@ -95,13 +94,11 @@ struct MainContentView: View {
     }
 
     var body: some View {
-
         NavigationView {
             contentView
                 .navigationTitle("实时海拔表")
                 .navigationBarTitleDisplayMode(.inline)
                 .preferredColorScheme(.dark)
-
         }
         .sheet(isPresented: $showSettings) {
             SettingsView(dataModel: dataModel)

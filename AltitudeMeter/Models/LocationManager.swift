@@ -63,7 +63,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                 first.administrativeArea,
                 first.locality,
                 first.subLocality,
-                first.thoroughfare
+                first.thoroughfare,
             ]
             .compactMap { $0 }
             .joined(separator: ", ")  // 返回国家、行政区、城市、街道等信息
@@ -75,21 +75,21 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     // MARK: - CLLocationManagerDelegate
     func locationManager(
-        _ manager: CLLocationManager,
+        _: CLLocationManager,
         didUpdateLocations locations: [CLLocation]
     ) {
         self.location = locations.last
     }
 
     func locationManager(
-        _ manager: CLLocationManager,
+        _: CLLocationManager,
         didFailWithError error: Error
     ) {
         print("定位失败: \(error.localizedDescription)")
     }
 
     func locationManager(
-        _ manager: CLLocationManager,
+        _: CLLocationManager,
         didUpdateHeading newHeading: CLHeading
     ) {
         self.heading = newHeading  // 更新方向数据

@@ -5,12 +5,11 @@
 //  Created by yxibng on 2025/6/12.
 //
 
+import os.log
 import Photos
 import UIKit
-import os.log
 
 class PhotoLibrary {
-
     enum PhotoLibraryError: Error {
         case authorizationDenied
         case saveFailed

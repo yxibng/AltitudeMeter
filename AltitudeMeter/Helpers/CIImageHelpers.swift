@@ -5,8 +5,8 @@
 //  Created by yxibng on 2025/6/18.
 //
 
-import CoreImage
 import AVFoundation
+import CoreImage
 import UIKit
 
 extension CGRect {
@@ -67,8 +67,7 @@ extension CIImage {
 
 extension AVCapturePhoto {
     var ciImage: CIImage? {
-
-        if let pixelBuffer = pixelBuffer {
+        if let pixelBuffer {
             // raw
             return CIImage(cvPixelBuffer: pixelBuffer)
         }
@@ -77,7 +76,7 @@ extension AVCapturePhoto {
         // 创建带元数据的 CIImage
           let options: [CIImageOption: Any] = [
               .applyOrientationProperty: true,  // 应用图像方向
-              .properties: self.metadata       // 保留照片元数据
+              .properties: self.metadata,       // 保留照片元数据
           ]
         return CIImage(data: data, options: options)
     }

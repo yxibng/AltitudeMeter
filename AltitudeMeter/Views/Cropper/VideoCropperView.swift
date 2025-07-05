@@ -7,17 +7,14 @@
 
 import SwiftUI
 
-
-
 struct VideoCropperView: UIViewRepresentable {
     @Binding var indicatorLocation: CGFloat
     let minimumRange: CGFloat
     let images: [UIImage]
     let onRangeChanged: (VideoRangeSlider.Range, VideoRangeSlider.Slider.Direction) -> Void
     let onIndicatorChanged: (CGFloat) -> Void
-    
 
-    func makeUIView(context: Context) -> VideoRangeSlider {
+    func makeUIView(context _: Context) -> VideoRangeSlider {
         let slider = VideoRangeSlider()
         slider.onRangeUpdateCallback = onRangeChanged
         slider.onIndicatorChangeCallback = {
@@ -27,20 +24,19 @@ struct VideoCropperView: UIViewRepresentable {
         slider.images = images
         return slider
     }
-    
-    func updateUIView(_ uiView: VideoRangeSlider, context: Context) {
+
+    func updateUIView(_ uiView: VideoRangeSlider, context _: Context) {
         uiView.images = images
         uiView.indicatorLocation = indicatorLocation
         uiView.minSpaceRatio = minimumRange
     }
-    
-    func makeCoordinator() -> VideoCropperView.Coordinate {
-        return Coordinate(cropperView: self)
+
+    func makeCoordinator() -> Self.Coordinate {
+        Coordinate(cropperView: self)
     }
-    
+
     typealias UIViewType = VideoRangeSlider
 }
-
 
 extension VideoCropperView {
     class Coordinate: NSObject {
@@ -48,13 +44,8 @@ extension VideoCropperView {
         init(cropperView: VideoCropperView) {
             self.cropperView = cropperView
         }
-        
     }
-    
-    
 }
 
-
 #Preview {
-
 }

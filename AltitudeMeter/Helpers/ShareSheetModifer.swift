@@ -17,7 +17,7 @@ struct ShareSheetModifer: ViewModifier {
             isPresented: $showShareSheet,
             content: {
                 ActivityViewController(
-                    activityItems: self.$shareSheetItems,
+                    activityItems: $shareSheetItems,
                     excludedActivityTypes: excludedActivityTypes
                 )
             }
@@ -30,7 +30,7 @@ struct ActivityViewController: UIViewControllerRepresentable {
     var excludedActivityTypes: [UIActivity.ActivityType]?
 
     func makeUIViewController(
-        context: UIViewControllerRepresentableContext<ActivityViewController>
+        context _: UIViewControllerRepresentableContext<Self>
     ) -> UIActivityViewController {
         let controller = UIActivityViewController(
             activityItems: activityItems,
@@ -43,8 +43,8 @@ struct ActivityViewController: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(
-        _ uiViewController: UIActivityViewController,
-        context: UIViewControllerRepresentableContext<ActivityViewController>
+        _: UIActivityViewController,
+        context _: UIViewControllerRepresentableContext<Self>
     ) {}
 }
 

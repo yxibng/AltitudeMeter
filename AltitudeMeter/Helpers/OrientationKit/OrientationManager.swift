@@ -1,8 +1,8 @@
 #if canImport(Combine)
 
-import UIKit
 import Combine
 import CoreMotion
+import UIKit
 
 /// `CMDeviceMotion` wrapper to comform `ObservableObject`.
 
@@ -32,13 +32,13 @@ public final class OrientationManager: ObservableObject {
         coreMotionManager.deviceMotionUpdateInterval = interval
 
         coreMotionManager.startDeviceMotionUpdates(to: queue) { [weak self] data, _ in
-            guard let self = self, let data = data else { return }
+            guard let self, let data else { return }
 
-            self.deviceMotion = data
+            deviceMotion = data
 
             let deviceOrientation = strategy.calculate(data.gravity)
 
-            if let deviceOrientation = deviceOrientation {
+            if let deviceOrientation {
                 self.deviceOrientation = deviceOrientation
             }
         }
@@ -73,32 +73,29 @@ extension OrientationManager {
 
 extension OrientationManager.Strategy {
     /// Largest axis wins the game.
-    public static let largestAxis = Self.init(calculate: estimateLargestAxis)
+    public static let largestAxis = Self(calculate: estimateLargestAxis)
 
     /// Mimics iOS system orientation change.
-    public static let systemLike = Self.init(calculate: estimateSystemLike)
+    public static let systemLike = Self(calculate: estimateSystemLike)
 }
 
 private func estimateLargestAxis(gravity g: CMAcceleration) -> UIDeviceOrientation? {
     if abs(g.z) > abs(g.x) && abs(g.z) > abs(g.y) {
         if g.z > 0 {
             return .faceDown
-        } else {
-            return .faceUp
         }
-    } else if abs(g.x) > abs(g.y) {
+        return .faceUp
+    }
+    if abs(g.x) > abs(g.y) {
         if g.x > 0 {
             return .landscapeRight
-        } else {
-            return .landscapeLeft
         }
-    } else {
-        if g.y > 0 {
-            return .portraitUpsideDown
-        } else {
-            return .portrait
-        }
+        return .landscapeLeft
     }
+    if g.y > 0 {
+        return .portraitUpsideDown
+    }
+    return .portrait
 }
 
 private func estimateSystemLike(gravity g: CMAcceleration) -> UIDeviceOrientation? {
@@ -106,9 +103,8 @@ private func estimateSystemLike(gravity g: CMAcceleration) -> UIDeviceOrientatio
     if abs(g.z) > 0.88 {
         if g.z > 0 {
             return .faceDown
-        } else {
-            return .faceUp
         }
+        return .faceUp
     }
 
     /*
@@ -139,15 +135,14 @@ private func estimateSystemLike(gravity g: CMAcceleration) -> UIDeviceOrientatio
     if x_ > y_ && atan2(x_, y_) > threshold {
         if g.x > 0 {
             return .landscapeRight
-        } else {
-            return .landscapeLeft
         }
-    } else if y_ > x_ && atan2(y_, x_) > threshold {
+        return .landscapeLeft
+    }
+    if y_ > x_ && atan2(y_, x_) > threshold {
         if g.y > 0 {
             return .portraitUpsideDown
-        } else {
-            return .portrait
         }
+        return .portrait
     }
 
     return nil

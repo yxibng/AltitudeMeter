@@ -128,7 +128,7 @@ enum BottomConentType: String, CaseIterable, Identifiable, Codable {
 extension CLLocationCoordinate2D: @retroactive Equatable {
     public static func == (lhs: CLLocationCoordinate2D, rhs: CLLocationCoordinate2D)
     -> Bool {
-        return lhs.latitude == rhs.latitude && lhs.longitude == rhs.longitude
+        lhs.latitude == rhs.latitude && lhs.longitude == rhs.longitude
     }
 }
 
@@ -143,8 +143,6 @@ struct AltitudeModel: Equatable {
     var sunset: Date?  // 日落时间
     var heading: CLHeading?  // 方向数据
     var preferences: Preferences = .init()
-    
-    
 }
 
 struct Preferences: Codable, Equatable {
@@ -173,7 +171,7 @@ struct Preferences: Codable, Equatable {
     init() {
         if let data = UserDefaults.standard.string(forKey: Self.key),
             let preferences = try? JSONDecoder().decode(
-                Preferences.self,
+                Self.self,
                 from: Data(data.utf8)
             ) {
             self = preferences
@@ -187,11 +185,9 @@ struct Preferences: Codable, Equatable {
             )
         }
     }
-
 }
 
 extension AltitudeDataModel {
-
     var pressure: String {
         guard let pressure = altitudeModel.pressure else {
             return "N/A"
@@ -314,14 +310,14 @@ class AltitudeDataModel: ObservableObject {
     @Published var altitudeModel = AltitudeModel()
     @Published var showNoLocationAuthAlert = false
     @Published var showNoCMAuthAlert = false
-    @Published var degrees: Double = 0.0 // compass degrees
+    @Published var degrees = 0.0 // compass degrees
     private let locationManager = LocationManager()
     private var cancellables = Set<AnyCancellable>()
     init() {
         setup()
     }
     private func onLocationUpdate(location: CLLocation?) {
-        guard let location = location else {
+        guard let location else {
             self.altitudeModel.altitude = nil
             self.altitudeModel.altitudeAccuracy = nil
             self.altitudeModel.location = nil
@@ -408,6 +404,5 @@ class AltitudeDataModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .assign(to: \.degrees, on: self)
             .store(in: &cancellables)
-
     }
 }

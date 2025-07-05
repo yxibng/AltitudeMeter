@@ -7,14 +7,12 @@
 
 import CoreImage
 
-
 class PixelBufferCompositingFilter: NSObject {
-    
     enum WatermarkType {
         case text(attributedString: NSAttributedString)
         case image(CIImage, scale: CGFloat = 1.0)
     }
-    
+
     struct WatermarkItem {
         let type: WatermarkType
         let position: CGPoint  // 水印位置
@@ -26,15 +24,14 @@ class PixelBufferCompositingFilter: NSObject {
         }
         return CIContext()
     }()
-    
+
     func composite(pixelBuffer: CVPixelBuffer, with Watermarks: [WatermarkItem]) -> CVPixelBuffer {
         func addTextWatermark(_ watermark: WatermarkItem, to image: CIImage) -> CIImage? {
             guard case .text(let attributedString) = watermark.type else { return nil }
             let textFilter = CIFilter(name: "CIAttributedTextImageGenerator")!
             textFilter.setValue(attributedString, forKey: "inputText")
             guard let textImage = textFilter.outputImage else { return nil }
-        
-        
+
             // 计算文字位置（基于原图尺寸）
             let transform = CGAffineTransform(translationX: watermark.position.x, y: watermark.position.y)
             let translatedTextImage = textImage.transformed(by: transform)
@@ -57,7 +54,7 @@ class PixelBufferCompositingFilter: NSObject {
             compositeFilter.setValue(image, forKey: kCIInputBackgroundImageKey)
             return compositeFilter.outputImage
         }
-        var filteredImage: CIImage = CIImage(cvPixelBuffer: pixelBuffer)
+        var filteredImage = CIImage(cvPixelBuffer: pixelBuffer)
         for watermark in Watermarks {
             switch watermark.type {
             case .text:
@@ -72,7 +69,7 @@ class PixelBufferCompositingFilter: NSObject {
         }
         return self.convertToPixelBuffer(ciImage: filteredImage, width: filteredImage.extent.width, height: filteredImage.extent.height) ?? pixelBuffer
     }
-    
+
     private func convertToPixelBuffer(ciImage: CIImage, width: CGFloat, height: CGFloat) -> CVPixelBuffer? {
         var pixelBuffer: CVPixelBuffer?
         let attrs = [
@@ -92,6 +89,4 @@ class PixelBufferCompositingFilter: NSObject {
         self.ciContext.render(ciImage, to: buffer)
         return buffer
     }
-    
-    
 }

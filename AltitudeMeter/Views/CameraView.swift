@@ -17,7 +17,7 @@ struct CameraView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var altitudeDataMode: AltitudeDataModel
     @StateObject private var cameraViewModel = CameraViewModel()
-    
+
     @State private var snpashot: UIImage?
     @State private var showSnapshot = false
     @State private var showNoAuthAlert = false
@@ -29,10 +29,9 @@ struct CameraView: View {
         return Theme.previewAspectRatio
     }
 
-    
     @State private var watermarkSize: CGSize = .zero
     @State private var videoSizeOnScreen: CGSize = .zero
-    
+
     @State private var rotationAngle: Angle = .zero
 
     struct Layout {
@@ -62,7 +61,6 @@ struct CameraView: View {
                     Text("照片")
                         .font(.system(size: 16, weight: .bold))
                         .foregroundStyle( cameraViewModel.cameraType == .photo ? .white : .white.opacity(0.5))
-                            
                 }
                 Spacer().frame(width: 32)
                 Button {
@@ -73,8 +71,8 @@ struct CameraView: View {
                         .foregroundStyle( cameraViewModel.cameraType == .video ? .white : .white.opacity(0.5))
                 }
             }
-            
-            if self.cameraViewModel.cameraType == .video {
+
+            if cameraViewModel.cameraType == .video {
                 HStack {
                     makeButton(imageName: "arrowshape.turn.up.backward") {
                         dismiss()
@@ -94,7 +92,7 @@ struct CameraView: View {
                                     width: Layout.takePhotoButtonWidth,
                                     height: Layout.takePhotoButtonWidth
                                 )
-                            
+
                             if cameraViewModel.isRecording {
                                 Rectangle()
                                     .fill(.red)
@@ -187,9 +185,9 @@ struct CameraView: View {
                         .font(.system(size: 15, weight: .bold))
                     + Text(altitudeDataMode.altitudeModel.preferences.altitudeUnit.title)
                         .font(.system(size: 14, weight: .medium))
-                    
+
                     Spacer().frame(height: 3)
-                    
+
                     Text("气压：")
                         .font(.system(size: 14))
                     + Text(altitudeDataMode.pressure)
@@ -205,10 +203,8 @@ struct CameraView: View {
             )
             .foregroundColor(.white)
         }
-        
     }
-    
-    
+
     var watermark: some View {
         Color.clear.overlay(alignment: .topLeading) {
             watermarkContent
@@ -216,7 +212,7 @@ struct CameraView: View {
                 .background(content: {
                     GeometryReader { proxy in
                         Color.clear.task(id: proxy.size) {
-                            self.watermarkSize = proxy.size
+                            watermarkSize = proxy.size
                             print("water mark size = \(proxy.size)")
                         }
                     }
@@ -226,10 +222,8 @@ struct CameraView: View {
 
     let videoViewId = UUID()
     let watermarkViewId = UUID()
-    
-    
+
     var previewWithLabels: some View {
-        
         ZStack(alignment: .center) {
             AVCaptureVideoPreviewView(session: cameraViewModel.session,
                                       videoOrientation: .portrait) { tapPoint, focusPoint in
@@ -245,7 +239,7 @@ struct CameraView: View {
             .background(content: {
                 GeometryReader { proxy in
                     Color.clear.task(id: proxy.size) {
-                        self.videoSizeOnScreen = proxy.size
+                        videoSizeOnScreen = proxy.size
                         print("video size on screen = \(proxy.size)")
                     }
                 }
@@ -268,9 +262,8 @@ struct CameraView: View {
     @State private var lastScale: CGFloat = 1.0
     @State private var showFocusIndicator = false
     @State private var focusSpot: FocusLocation?
-    @State private var showVideoEditor: Bool = false
+    @State private var showVideoEditor = false
     @State private var outpuURL: URL?
-    
 
     var magnificationGesture: some Gesture {
         MagnificationGesture()
@@ -292,9 +285,7 @@ struct CameraView: View {
     }
 
     var contentView: some View {
-        
         ZStack(alignment: .top) {
-
             previewWithLabels
                 .aspectRatio(Theme.previewAspectRatio, contentMode: .fit)
                 .gesture(magnificationGesture)
@@ -327,7 +318,6 @@ struct CameraView: View {
                 bottomView
                     .frame(maxWidth: .infinity, maxHeight: Layout.bottomHeight)
             }
-
         }
     }
 
@@ -360,12 +350,12 @@ struct CameraView: View {
             }.throttleChange(of: $altitudeDataMode.altitudeModel, duration: 0.5, action: { _ in
                 updateWatermarkForVideoRecording()
             })
-            .onChange(of: cameraViewModel.deviceOrientation) { newValue in
+            .onChange(of: cameraViewModel.deviceOrientation) { _ in
                 updateWatermarkForVideoRecording()
             }
-            .onChange(of: cameraViewModel.videoSize) { newValue in
+            .onChange(of: cameraViewModel.videoSize) { _ in
                 updateWatermarkForVideoRecording()
-            }.onChange(of: cameraViewModel.isRecording) { newValue in
+            }.onChange(of: cameraViewModel.isRecording) { _ in
                 updateWatermarkForVideoRecording()
             }
             .onReceive(cameraViewModel.eventPublisher) { event in
@@ -375,8 +365,8 @@ struct CameraView: View {
                         print("Recording stopped but URL is nil")
                         return
                     }
-                    self.outpuURL = url
-                    self.showVideoEditor = true
+                    outpuURL = url
+                    showVideoEditor = true
                 default:
                     break
                 }
@@ -395,7 +385,6 @@ struct CameraView: View {
 }
 
 extension CameraView {
-    
     private func updateWatermarkForVideoRecording() {
         if cameraViewModel.videoSize == .zero { return }
         if cameraViewModel.cameraType == .photo { return }
@@ -436,14 +425,14 @@ extension CameraView {
         snpashot = image
         showSnapshot = true
     }
-    
-    private func generateSnapshot(sourceImageSize: CGSize) -> (image: CIImage ,position: CGPoint) {
+
+    private func generateSnapshot(sourceImageSize: CGSize) -> (image: CIImage, position: CGPoint) {
         let videoSizeOnScreen = cameraViewModel.deviceOrientation.isLandscape ? self.videoSizeOnScreen.revert : self.videoSizeOnScreen
         let scale = CGFloat(sourceImageSize.width / videoSizeOnScreen.width)
-        
+
         let offsetX = Layout.watermarkPadding * scale
         let offsetY = (videoSizeOnScreen.height - Layout.watermarkPadding - watermarkSize.height) * scale
-        
+
         let watermarkImage = watermarkContent
             .asImage(
                 size: watermarkSize,
@@ -453,8 +442,6 @@ extension CameraView {
         return (watermarkImage, CGPoint(x: offsetX, y: offsetY))
     }
 }
-
-
 
 #Preview {
     CameraView(altitudeDataMode: AltitudeDataModel())

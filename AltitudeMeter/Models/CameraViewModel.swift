@@ -6,8 +6,8 @@
 //
 
 import AVFoundation
-import SwiftUI
 import Combine
+import SwiftUI
 
 class CameraViewModel: ObservableObject {
     deinit {
@@ -15,12 +15,12 @@ class CameraViewModel: ObservableObject {
         orientationManager.stop()
         print("CameraViewModel deinitialized")
     }
-    
+
     struct WatermarkItem {
         let image: CIImage
         let position: CGPoint
     }
-    
+
     private let lock = NSLock()
     private var _watermark: WatermarkItem?
     var watermark: WatermarkItem? {
@@ -35,12 +35,12 @@ class CameraViewModel: ObservableObject {
             return _watermark
         }
     }
-    
+
     enum DataEvent {
         case didStartRecording
         case didStopRecording(URL?)
     }
-    
+
     private let eventSubject = PassthroughSubject<DataEvent, Never>()
     var eventPublisher: AnyPublisher<DataEvent, Never> {
         eventSubject.eraseToAnyPublisher()
@@ -49,34 +49,34 @@ class CameraViewModel: ObservableObject {
     private lazy var camera: Camera = {
       let camera = Camera()
         camera.onCapturePhoto = { [weak self] image in
-            guard let self = self else { return }
+            guard let self else { return }
             Task { @MainActor in
                 self.photo = image.ciImage
             }
         }
         camera.onCaptureSampleBuffer = { [weak self] sampleBuffer, type in
-            guard let self = self else { return }
-            self.handleSampleBuffer(sampleBuffer, type: type)
+            guard let self else { return }
+            handleSampleBuffer(sampleBuffer, type: type)
         }
-        
+
         camera.$videoSize
             .receive(on: DispatchQueue.main)
             .filter({ $0 != .zero })
             .sink { [weak self] size in
-                guard let self = self else { return }
+                guard let self else { return }
                 // Update aspect ratio based on video size
                 var aspectRatio: CGFloat = size.width / size.height
-                
+
                 let max = max(size.width, size.height)
                 let min = min(size.width, size.height)
-                
+
                 self.aspectRatio = min / max
-                if self.deviceOrientation.isLandscape {
-                    self.videoSize = CGSize(
+                if deviceOrientation.isLandscape {
+                    videoSize = CGSize(
                         width: max, height: min
                     )
                 } else {
-                    self.videoSize = CGSize(
+                    videoSize = CGSize(
                         width: min, height: max
                     )
                 }
@@ -85,24 +85,21 @@ class CameraViewModel: ObservableObject {
             .store(in: &cancellables)
         return camera
     }()
-    
-    
+
     private let pixelBufferFilter = PixelBufferCompositingFilter()
 
     private lazy var assetWriter: AssetWritter = {
         let url = FileManager.default.temporaryDirectory
             .appendingPathComponent("output.mov")
-        let assetWriter = AssetWritter {[weak self] pixelBuffer in
-            guard let self = self,
-                  let watermarkItem = self.watermark
+        return AssetWritter {[weak self] pixelBuffer in
+            guard let self,
+                  let watermarkItem = watermark
             else { return pixelBuffer }
             // Apply watermark to the pixel buffer
-            let filteredPixelBuffer = self.pixelBufferFilter.composite(pixelBuffer: pixelBuffer, with: [
+            return pixelBufferFilter.composite(pixelBuffer: pixelBuffer, with: [
                 .init(type: .image(watermarkItem.image, scale: 1.0), position: watermarkItem.position)
             ])
-            return filteredPixelBuffer
         }
-        return assetWriter
     }()
 
     var session: AVCaptureSession {
@@ -129,28 +126,28 @@ class CameraViewModel: ObservableObject {
     }
     @ObservedObject private var orientationManager = OrientationManager()
     @Published var isRecording = false // video recording state
-    @Published var videoSize = CGSize.zero //output video/photo size, potrait mode is width < height, landscape mode is width > height
+    @Published var videoSize = CGSize.zero // output video/photo size, potrait mode is width < height, landscape mode is width > height
     @Published var aspectRatio: CGFloat = Theme.previewAspectRatio {
         didSet {
             print("aspectRatio updated: \(aspectRatio)")
         }
-    } //aspect ratio for video preview
+    } // aspect ratio for video preview
     private var cancellables = Set<AnyCancellable>()
     init() {
         Task {
             await handleVideoAuthorization()
         }
-        orientationManager.start(interval: 1/30.0)
+        orientationManager.start(interval: 1 / 30.0)
         orientationManager.$deviceOrientation
             .receive(on: DispatchQueue.main)
             .sink { [weak self] orientation in
-                guard let self = self else { return }
-                if self.isRecording {
-                    //录制中，不允许修改方向
+                guard let self else { return }
+                if isRecording {
+                    // 录制中，不允许修改方向
                     return
                 }
-                self.deviceOrientation = orientation
-                self.camera.deviceOrientation = orientation
+                deviceOrientation = orientation
+                camera.deviceOrientation = orientation
             }
             .store(in: &cancellables)
     }
@@ -187,7 +184,7 @@ class CameraViewModel: ObservableObject {
         camera.cameraType = type
         self.cameraType = type
     }
-    
+
     func startRecording() {
         let url = FileManager.default.temporaryDirectory
             .appendingPathComponent("output.mov")
@@ -195,15 +192,14 @@ class CameraViewModel: ObservableObject {
         self.eventSubject.send(.didStartRecording)
         self.isRecording = true
     }
-    
-    
+
     func stopRecording() {
         self.assetWriter.stopRecording {[weak self] outputURL in
-            guard let self = self else { return }
+            guard let self else { return }
             // Handle post-recording actions, like saving the video or showing a preview
             print("Recording stopped and saved to: \(outputURL?.absoluteString ?? "Unknown URL")")
-            //TOOD: report to user
-            guard let outputURL = outputURL else {
+            // TOOD: report to user
+            guard let outputURL else {
                 print("No output URL provided")
                 return
             }
@@ -213,7 +209,7 @@ class CameraViewModel: ObservableObject {
         }
         self.isRecording = false
     }
-    
+
     private func handleVideoAuthorization() async {
         let authorizationStatus = await AVCaptureDevice.requestAccess(
             for: .video
@@ -224,25 +220,22 @@ class CameraViewModel: ObservableObject {
     }
 }
 
-
 private extension CameraViewModel {
-    
     func handleSampleBuffer(_ sampleBuffer: CMSampleBuffer, type: Camera.BufferType) {
         if !self.isRecording {
             return
         }
-        
+
         if self.watermark == nil {
             // No watermark set, just write the sample buffer directly
             print("no watermark set, ignoring sample buffer")
             return
         }
-        
+
         if type == .audio {
             assetWriter.writeAudio(sampleBuffer: sampleBuffer)
         } else {
             assetWriter.writeVideo(sampleBuffer: sampleBuffer)
         }
     }
-    
 }

@@ -1,5 +1,5 @@
-import UIKit
 import AVFoundation
+import UIKit
 
 // MARK: - CGImagePropertyOrientation
 
@@ -112,11 +112,11 @@ extension UIDeviceOrientation: @retroactive CustomDebugStringConvertible {
     }
 
     public var interfaceOrientation: UIInterfaceOrientation {
-        UIInterfaceOrientation.init(deviceOrientation: self)
+        UIInterfaceOrientation(deviceOrientation: self)
     }
 
     public var avCaptureVideoOrientation: AVCaptureVideoOrientation? {
-        AVCaptureVideoOrientation.init(deviceOrientation: self)
+        AVCaptureVideoOrientation(deviceOrientation: self)
     }
 
     public var estimatedImageOrientation: UIImage.Orientation? {
@@ -181,7 +181,7 @@ extension UIInterfaceOrientation: @retroactive CustomDebugStringConvertible {
     }
 
     public var avCaptureVideoOrientation: AVCaptureVideoOrientation? {
-        AVCaptureVideoOrientation.init(interfaceOrientation: self)
+        AVCaptureVideoOrientation(interfaceOrientation: self)
     }
 }
 
@@ -256,7 +256,7 @@ extension UIImage.Orientation {
     }
 
     public var cgImagePropertyOrientation: CGImagePropertyOrientation? {
-        CGImagePropertyOrientation.init(uiImageOrientation: self)
+        CGImagePropertyOrientation(uiImageOrientation: self)
     }
 
     public var estimatedDeviceOrientation: UIDeviceOrientation {

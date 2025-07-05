@@ -32,7 +32,6 @@ struct FixedPositionRotatedView<Content: View>: View {
         }
     }
 
-
     private var shouldSwapDimensions: Bool {
         let normalizedAngle = angle.truncatingRemainder(dividingBy: 360)
         return normalizedAngle.isClose(to: 90) || normalizedAngle.isClose(to: 270)
@@ -42,6 +41,6 @@ struct FixedPositionRotatedView<Content: View>: View {
 // 浮点数近似比较扩展
 extension Double {
     func isClose(to target: Double, tolerance: Double = 1.0) -> Bool {
-        return abs(self - target) < tolerance
+        abs(self - target) < tolerance
     }
 }

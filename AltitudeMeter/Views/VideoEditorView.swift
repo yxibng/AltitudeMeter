@@ -11,7 +11,7 @@ import SwiftUI
 
 extension CMTime {
     var isNumeric: Bool {
-        return (flags.intersection(.valid)) != [] && value != 0
+        (flags.intersection(.valid)) != [] && value != 0
     }
 }
 
@@ -35,7 +35,7 @@ struct VideoEditorView: View {
         static let toolbarHeight: CGFloat = 50.0
         static let toolbarPadding: CGFloat = 10.0
         static let innerFramesPadding: CGFloat = 10.0
-        static let numberOfFrames: Int = 8
+        static let numberOfFrames = 8
     }
 
     init(url: URL) {
@@ -44,7 +44,7 @@ struct VideoEditorView: View {
 
     var playButton: some View {
         Button(action: {
-            self.videoEditorViewModel.togglePlay()
+            videoEditorViewModel.togglePlay()
         }) {
             Image(systemName: isPlaying ? "pause.fill" : "play.fill")
                 .font(.largeTitle)
@@ -54,43 +54,39 @@ struct VideoEditorView: View {
     }
 
     var bottomToolbar: some View {
-
         Color.clear
             .overlay {
-
                 VStack(spacing: 20) {
-
                     HStack {
                         Spacer()
-                        Text("已选择时长 \(self.videoEditorViewModel.selectedRangeText)")
+                        Text("已选择时长 \(videoEditorViewModel.selectedRangeText)")
                             .foregroundColor(.white)
                     }
-                    
+
                     HStack {
                         playButton.background(
-                            Color.init(uiColor: UIColor.lightGray)
+                            Color(uiColor: UIColor.lightGray)
                         )
                         Spacer().frame(width: 1.0)
                         VideoCropperView(
                             indicatorLocation: $videoEditorViewModel.currentTimeRatio,
-                            minimumRange: self.videoEditorViewModel.allowedMinRangeRatio,
+                            minimumRange: videoEditorViewModel.allowedMinRangeRatio,
                             images: frameExtractor.frames.compactMap({
                                 $0.image
                             }),
-                            onRangeChanged: { range, direction in
-                                self.videoEditorViewModel.pause()
-                                self.videoEditorViewModel.selecteRange =
+                            onRangeChanged: { range, _ in
+                                videoEditorViewModel.pause()
+                                videoEditorViewModel.selecteRange =
                                     range.min...range.max
                             },
                             onIndicatorChanged: { newValue in
-                                self.videoEditorViewModel.pause()
+                                videoEditorViewModel.pause()
                                 let seekPoint =
                                     videoEditorViewModel.duration * newValue
-                                self.videoEditorViewModel.seek(to: seekPoint)
+                                videoEditorViewModel.seek(to: seekPoint)
                             }
                         )
-                        .onChange(of: videoEditorViewModel.currentTime) { newValue in
-                            
+                        .onChange(of: videoEditorViewModel.currentTime) { _ in
                         }
                         .frame(height: Layout.toolbarHeight)
                     }
@@ -112,10 +108,8 @@ struct VideoEditorView: View {
                         Spacer()
                     }
                 }
-
             }
             .padding()
-
     }
 
     var body: some View {
@@ -146,27 +140,23 @@ struct VideoEditorView: View {
             perform: { _ in }
         ) /*参考：一段因 @State 注入机制所产生的“灵异代码” https://fatbobman.com/zh/posts/bug-code-by-state-inject*/
         .sheet(isPresented: $showSaveSheet) {
-            if let outputURL = outputURL {
+            if let outputURL {
                 ShareVideoView(url: outputURL)
                     .background(Color.black)
             } else {
                 Rectangle().fill(Color.red)
                     .overlay(
-                        Text("输出文件不存在, \(self.outputURL?.absoluteString ?? "")")
+                        Text("输出文件不存在, \(outputURL?.absoluteString ?? "")")
                     )
                     .frame(width: 300, height: 200)
-
             }
         }
-
     }
 }
 
 extension VideoEditorView {
-
     fileprivate func cropVideoAction() {
         Task {
-
             let outputURL = FileManager.default
                 .temporaryDirectory.appendingPathComponent(
                     "cropped_video.mp4"
@@ -193,10 +183,8 @@ extension VideoEditorView {
                 self.outputURL = outputURL
                 self.showSaveSheet = true
             }
-
         }
     }
-
 }
 
 #Preview {

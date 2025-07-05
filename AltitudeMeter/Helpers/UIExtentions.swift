@@ -9,7 +9,7 @@ import SwiftUI
 
 extension CGSize {
     var revert: CGSize {
-        return CGSize(width: self.height, height: self.width)
+        CGSize(width: self.height, height: self.width)
     }
 }
 extension UIView {
@@ -38,7 +38,7 @@ extension UIScreen {
     }
 
     static var screenSize: CGSize {
-        return UIScreen.main.bounds.size
+        UIScreen.main.bounds.size
     }
 }
 
@@ -49,8 +49,7 @@ extension View {
         )
         controller.view.bounds = CGRect(origin: .zero, size: size)
         controller.view.backgroundColor = .clear
-        let image = controller.view.asImage(scale: scale)
-        return image
+        return controller.view.asImage(scale: scale)
     }
 }
 
@@ -58,9 +57,7 @@ extension UIImage {
     func asCIImage() -> CIImage {
         if let ciImage = CIImage(image: self) {
             return ciImage
-        } else {
-            return CIImage(cgImage: self.cgImage!)
         }
+        return CIImage(cgImage: self.cgImage!)
     }
-
 }
