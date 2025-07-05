@@ -74,8 +74,10 @@ struct CameraView: View {
 
             if cameraViewModel.cameraType == .video {
                 HStack {
-                    makeButton(imageName: "arrowshape.turn.up.backward") {
-                        dismiss()
+                    if !cameraViewModel.isRecording {
+                        makeButton(imageName: "arrowshape.turn.up.backward") {
+                            dismiss()
+                        }
                     }
                     Spacer()
                     Button {
@@ -111,10 +113,12 @@ struct CameraView: View {
                         }
                     }
                     Spacer()
-                    makeButton(
-                        imageName: "arrow.trianglehead.2.clockwise.rotate.90.camera"
-                    ) {
-                        cameraViewModel.switchCamera()
+                    if !cameraViewModel.isRecording {
+                        makeButton(
+                            imageName: "arrow.trianglehead.2.clockwise.rotate.90.camera"
+                        ) {
+                            cameraViewModel.switchCamera()
+                        }
                     }
                 }
                 .padding(EdgeInsets(
