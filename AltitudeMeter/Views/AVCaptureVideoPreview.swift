@@ -22,6 +22,9 @@ class AVCaptureVideoPreview: UIView {
     @objc private func handleTap(_ gesture: UITapGestureRecognizer) {
         let touchPoint = gesture.location(in: self)
         let focusPoint = self.previewLayer.captureDevicePointConverted(fromLayerPoint: touchPoint)
+        if focusPoint.x < 0 || focusPoint.x > 1 || focusPoint.y < 0 || focusPoint.y > 1 {
+            return // Ignore taps outside the valid range
+        }
         tapAction?(touchPoint, focusPoint)
     }
 
@@ -30,7 +33,7 @@ class AVCaptureVideoPreview: UIView {
     }
 
     func setupPreviewLayer() {
-        self.previewLayer.videoGravity = .resizeAspectFill
+        self.previewLayer.videoGravity = .resizeAspect
     }
 
     var session: AVCaptureSession? {

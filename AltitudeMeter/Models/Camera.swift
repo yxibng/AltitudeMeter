@@ -10,25 +10,40 @@ import CoreImage
 import os.log
 import UIKit
 
+extension AVCaptureDevice {
+    var resolution: CGSize {
+        let dims = CMVideoFormatDescriptionGetDimensions(activeFormat.formatDescription)
+        return CGSize(width: CGFloat(dims.width), height: CGFloat(dims.height))
+    }
+}
+
 class Camera: NSObject {
     enum CameraType {
         case photo
         case video
     }
-
+    
+    enum BufferType {
+        case video
+        case audio
+    }
+    
 
     var cameraType: CameraType = .photo {
         didSet {
             if cameraType == .video {
                 self.sessionQueue.async { [weak self] in
                     guard let self else { return }
-                    captureSession.sessionPreset = .hd1920x1080
                     captureSession.beginConfiguration()
-                    defer { captureSession.commitConfiguration() }
+                    defer {
+                        captureSession.commitConfiguration()
+                        self.videoSize = self.captureDevice?.resolution ?? .zero
+                    }
+                    captureSession.sessionPreset = .hd1920x1080
                     // add audio input if it doesn't exist
                     if let audioDevice,
                        let audioInput = try? AVCaptureDeviceInput(device: audioDevice) {
-                        if captureSession.inputs.contains(audioInput),
+                        if !captureSession.inputs.contains(audioInput),
                            captureSession.canAddInput(audioInput) {
                             captureSession.addInput(audioInput)
                             audioDeviceInput = audioInput
@@ -51,7 +66,11 @@ class Camera: NSObject {
                 self.sessionQueue.async { [weak self] in
                     guard let self else { return }
                     captureSession.beginConfiguration()
-                    defer { captureSession.commitConfiguration() }
+                    defer {
+                        captureSession.commitConfiguration()
+                        self.videoSize = self.captureDevice?.resolution ?? .zero
+                        print("type photo, videoSize = \(self.videoSize)")
+                    }
                     captureSession.sessionPreset = .photo
                     // remove audio input if it exists
                     if let audioDeviceInput {
@@ -80,11 +99,12 @@ class Camera: NSObject {
     private var videoDeviceInput: AVCaptureDeviceInput?
     private var audioDeviceInput: AVCaptureDeviceInput?
     private var photoOutput: AVCapturePhotoOutput?
+    @Published var videoSize: CGSize = .zero
     private lazy var videoOutput: AVCaptureVideoDataOutput = {
         let videoOutput = AVCaptureVideoDataOutput()
         videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "VideoDataOutputQueue"))
         videoOutput.videoSettings = [
-            kCVPixelBufferPixelFormatTypeKey as String: Int(kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange)
+            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
         ]
         return videoOutput
     }()
@@ -180,29 +200,8 @@ class Camera: NSObject {
         return backCaptureDevices.contains(captureDevice)
     }
 
-    private var addToPhotoStream: ((AVCapturePhoto) -> Void)?
-
-    private var addToPreviewStream: ((CIImage) -> Void)?
-
-    var isPreviewPaused = false
-
-    lazy var previewStream: AsyncStream<CIImage> = {
-        AsyncStream { continuation in
-            addToPreviewStream = { ciImage in
-                if !self.isPreviewPaused {
-                    continuation.yield(ciImage)
-                }
-            }
-        }
-    }()
-
-    lazy var photoStream: AsyncStream<AVCapturePhoto> = {
-        AsyncStream { continuation in
-            addToPhotoStream = { photo in
-                continuation.yield(photo)
-            }
-        }
-    }()
+    var onCapturePhoto: ((AVCapturePhoto) -> Void)?
+    var onCaptureSampleBuffer: ((CMSampleBuffer, BufferType) -> Void)?
 
     override init() {
         super.init()
@@ -334,6 +333,7 @@ class Camera: NSObject {
                 videoOutputConnection.videoOrientation = self.deviceOrientation.avCaptureVideoOrientation ?? .portrait
             }
         }
+        self.videoSize = captureDevice?.resolution ?? .zero
     }
 
     func start() async {
@@ -357,6 +357,7 @@ class Camera: NSObject {
             guard let self else { return }
             configureCaptureSession { success in
                 guard success else { return }
+                self.videoSize = self.captureDevice?.resolution ?? .zero
                 self.captureSession.startRunning()
             }
         }
@@ -474,17 +475,23 @@ extension Camera: AVCapturePhotoCaptureDelegate {
             logger.error("Error capturing photo: \(error.localizedDescription)")
             return
         }
-
-        addToPhotoStream?(photo)
+        onCapturePhoto?(photo)
     }
 }
 
 extension Camera: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAudioDataOutputSampleBufferDelegate {
     func captureOutput(
         _: AVCaptureOutput,
-        didOutput _: CMSampleBuffer,
-        from _: AVCaptureConnection
+        didOutput sampleBuffer: CMSampleBuffer,
+        from connection: AVCaptureConnection
     ) {
+        if connection == self.videoOutput.connection(with: .video) {
+            onCaptureSampleBuffer?(sampleBuffer, .video)
+        } else if connection == self.audioOutput.connection(with: .audio) {
+            onCaptureSampleBuffer?(sampleBuffer, .audio)
+        } else {
+            logger.error("Unexpected capture output type.")
+        }
     }
 }
 

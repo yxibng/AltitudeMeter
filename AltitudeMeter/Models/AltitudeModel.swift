@@ -125,7 +125,14 @@ enum BottomConentType: String, CaseIterable, Identifiable, Codable {
     }
 }
 
-struct AltitudeModel {
+extension CLLocationCoordinate2D: @retroactive Equatable {
+    public static func == (lhs: CLLocationCoordinate2D, rhs: CLLocationCoordinate2D)
+    -> Bool {
+        return lhs.latitude == rhs.latitude && lhs.longitude == rhs.longitude
+    }
+}
+
+struct AltitudeModel: Equatable {
     var altitude: Double?  // 海拔高度，单位为米
     var altitudeAccuracy: Double?  // 海拔高度精度，单位为米
     var pressure: Double?  // 气压值，单位为千帕（kPa）
@@ -136,9 +143,11 @@ struct AltitudeModel {
     var sunset: Date?  // 日落时间
     var heading: CLHeading?  // 方向数据
     var preferences: Preferences = .init()
+    
+    
 }
 
-struct Preferences: Codable {
+struct Preferences: Codable, Equatable {
     static let key = "com.yxibng.altitudeMeter.preferences"
     var altitudeUnit: AltitudeUnitType = .meter {
         didSet {
@@ -305,13 +314,12 @@ class AltitudeDataModel: ObservableObject {
     @Published var altitudeModel = AltitudeModel()
     @Published var showNoLocationAuthAlert = false
     @Published var showNoCMAuthAlert = false
-    @Published var degrees: Double = 0.0
+    @Published var degrees: Double = 0.0 // compass degrees
     private let locationManager = LocationManager()
     private var cancellables = Set<AnyCancellable>()
     init() {
         setup()
     }
-
     private func onLocationUpdate(location: CLLocation?) {
         guard let location = location else {
             self.altitudeModel.altitude = nil

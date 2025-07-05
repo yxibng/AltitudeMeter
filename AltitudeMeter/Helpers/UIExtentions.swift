@@ -7,6 +7,11 @@
 
 import SwiftUI
 
+extension CGSize {
+    var revert: CGSize {
+        return CGSize(width: self.height, height: self.width)
+    }
+}
 extension UIView {
     func asImage(scale: CGFloat) -> UIImage {
         let format = UIGraphicsImageRendererFormat()

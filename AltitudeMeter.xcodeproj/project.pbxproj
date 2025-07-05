@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		86AAEE642DF2CFFD002ACDBD /* SwiftSunriseSunset in Frameworks */ = {isa = PBXBuildFile; productRef = 86AAEE632DF2CFFD002ACDBD /* SwiftSunriseSunset */; };
+		86E0D9E02E17C28D00263ECD /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 86E0D9DF2E17C28D00263ECD /* SnapKit */; };
 		86F2D6B62E002A29009AD382 /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 86F2D6B52E002A29009AD382 /* AlertToast */; };
 /* End PBXBuildFile section */
 
@@ -28,6 +29,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				86E0D9E02E17C28D00263ECD /* SnapKit in Frameworks */,
 				86AAEE642DF2CFFD002ACDBD /* SwiftSunriseSunset in Frameworks */,
 				86F2D6B62E002A29009AD382 /* AlertToast in Frameworks */,
 			);
@@ -74,6 +76,7 @@
 			packageProductDependencies = (
 				86AAEE632DF2CFFD002ACDBD /* SwiftSunriseSunset */,
 				86F2D6B52E002A29009AD382 /* AlertToast */,
+				86E0D9DF2E17C28D00263ECD /* SnapKit */,
 			);
 			productName = AltitudeMeter;
 			productReference = 86082AA42DF1866900F4C824 /* AltitudeMeter.app */;
@@ -106,6 +109,7 @@
 			packageReferences = (
 				86AAEE622DF2CFFD002ACDBD /* XCRemoteSwiftPackageReference "swift-sunrise-sunset" */,
 				86F2D6B42E002A29009AD382 /* XCRemoteSwiftPackageReference "AlertToast" */,
+				86E0D9DE2E17C28D00263ECD /* XCRemoteSwiftPackageReference "SnapKit" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 86082AA52DF1866900F4C824 /* Products */;
@@ -271,6 +275,7 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "需要使用相机来拍摄照片";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "需要始终位置权限获取经纬度和海拔";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "需要位置权限获取经纬度和海拔";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "需要使用麦克风权限录制视频";
 				INFOPLIST_KEY_NSMotionUsageDescription = "需要使用气压计获取海拔高度";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "需要将拍摄的照片保存到相册里";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -306,6 +311,7 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "需要使用相机来拍摄照片";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "需要始终位置权限获取经纬度和海拔";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "需要位置权限获取经纬度和海拔";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "需要使用麦克风权限录制视频";
 				INFOPLIST_KEY_NSMotionUsageDescription = "需要使用气压计获取海拔高度";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "需要将拍摄的照片保存到相册里";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -359,6 +365,14 @@
 				minimumVersion = 0.2.0;
 			};
 		};
+		86E0D9DE2E17C28D00263ECD /* XCRemoteSwiftPackageReference "SnapKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "git@github.com:SnapKit/SnapKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.0;
+			};
+		};
 		86F2D6B42E002A29009AD382 /* XCRemoteSwiftPackageReference "AlertToast" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "git@github.com:elai950/AlertToast.git";
@@ -374,6 +388,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 86AAEE622DF2CFFD002ACDBD /* XCRemoteSwiftPackageReference "swift-sunrise-sunset" */;
 			productName = SwiftSunriseSunset;
+		};
+		86E0D9DF2E17C28D00263ECD /* SnapKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 86E0D9DE2E17C28D00263ECD /* XCRemoteSwiftPackageReference "SnapKit" */;
+			productName = SnapKit;
 		};
 		86F2D6B52E002A29009AD382 /* AlertToast */ = {
 			isa = XCSwiftPackageProductDependency;

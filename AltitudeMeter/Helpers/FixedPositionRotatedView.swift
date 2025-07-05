@@ -18,33 +18,20 @@ struct FixedPositionRotatedView<Content: View>: View {
     }
 
     var body: some View {
-        GeometryReader { outerProxy in
-            ZStack {
-                // 测量原始内容尺寸
-                Color.clear
-                    .background(
-                        GeometryReader { innerProxy in
-                            Color.clear
-                                .onAppear {
-                                    originalSize = innerProxy.size
-                                }
-                        }
-                    )
-
-                // 旋转后的内容（保持中心点位置不变）
-                content
-                    .rotationEffect(.degrees(angle))
-                    .frame(
-                        width: shouldSwapDimensions ? originalSize.height : originalSize.width,
-                        height: shouldSwapDimensions ? originalSize.width : originalSize.height
-                    )
-                    .position(
-                        x: outerProxy.size.width / 2,
-                        y: outerProxy.size.height / 2
-                    )
-            }
+        GeometryReader { geometry in
+            content
+                .rotationEffect(.degrees(angle))
+                .frame(
+                    width: shouldSwapDimensions ? geometry.size.height : geometry.size.width,
+                    height: shouldSwapDimensions ? geometry.size.width : geometry.size.height
+                )
+                .position(
+                    x: geometry.size.width / 2,
+                    y: geometry.size.height / 2
+                )
         }
     }
+
 
     private var shouldSwapDimensions: Bool {
         let normalizedAngle = angle.truncatingRemainder(dividingBy: 360)
