@@ -9,7 +9,6 @@ import SwiftUI
 
 enum Theme {
     static let previewAspectRatio: CGFloat = 9 / 16.0
-    static let maxZoomFactor: CGFloat = 5.0
     static let minZoomFactor: CGFloat = 1.0
 }
 
@@ -62,6 +61,8 @@ struct CameraView: View {
                         .font(.system(size: 16, weight: .bold))
                         .foregroundStyle( cameraViewModel.cameraType == .photo ? .white : .white.opacity(0.5))
                 }
+                .disabled(cameraViewModel.isRecording)
+                
                 Spacer().frame(width: 32)
                 Button {
                     cameraViewModel.setCameraType(.video)
@@ -70,6 +71,7 @@ struct CameraView: View {
                         .font(.system(size: 16, weight: .bold))
                         .foregroundStyle( cameraViewModel.cameraType == .video ? .white : .white.opacity(0.5))
                 }
+                .disabled(cameraViewModel.isRecording)
             }
 
             if cameraViewModel.cameraType == .video {
@@ -259,32 +261,66 @@ struct CameraView: View {
                         self.focusSpot = nil  // 自动消失
                     }
             }
+            
+            if cameraViewModel.isRecording {
+                Color.clear.aspectRatio(self.cameraViewModel.aspectRatio, contentMode: .fit)
+                    .overlay(alignment: .topTrailing) {
+                        Text(self.cameraViewModel.recordingDuration.durationString)
+                            .padding(4)
+                            .background(Color.red).cornerRadius(2)
+                            .foregroundStyle(.white)
+                    }
+            }
+            if showZoomFactorView {
+                Color.clear.aspectRatio(self.cameraViewModel.aspectRatio, contentMode: .fit).overlay {
+                    VStack {
+                        Spacer()
+                        Text("\(String(format: "%.1fX", zoomFactor * self.gestureScale))")
+                            .foregroundStyle(.red)
+                            .task {
+                                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                                self.showZoomFactorView = false
+                            }
+                    }
+                }
+            }
+            
         }
     }
 
     @State private var zoomFactor: CGFloat = 1.0
-    @State private var lastScale: CGFloat = 1.0
+    @GestureState private var gestureScale: CGFloat = 1.0
     @State private var showFocusIndicator = false
     @State private var focusSpot: FocusLocation?
+    @State private var showZoomFactorView = false
     @State private var showVideoEditor = false
     @State private var outpuURL: URL?
-
+    
     var magnificationGesture: some Gesture {
         MagnificationGesture()
-            .onChanged { newScale in
-                // 计算从上次状态到现在的缩放变化
-                let delta = newScale / lastScale
-                let newZoomFactor = zoomFactor * delta
-                zoomFactor = min(
-                    max(newZoomFactor, Theme.minZoomFactor),
-                    Theme.maxZoomFactor
-                )
-                lastScale = zoomFactor
-                cameraViewModel.setZoomFactor(zoomFactor)
+              .updating($gestureScale) { value, state, _ in
+                // 计算预期缩放比例
+                let newScale = zoomFactor * value
+                
+                // 在 updating 中应用边界限制
+                  if newScale <= Theme.minZoomFactor {
+                    // 达到最小缩放时，反推手势值
+                    state = Theme.minZoomFactor / zoomFactor
+                } else if newScale >= cameraViewModel.maxZoomFactor {
+                    // 达到最大缩放时，反推手势值
+                    state = cameraViewModel.maxZoomFactor / zoomFactor
+                } else {
+                    // 正常范围内使用原始值
+                    state = value
+                }
+                  self.cameraViewModel.setZoomFactor(zoomFactor * value)
+                  self.showZoomFactorView = true
             }
-            .onEnded { _ in
-                // 重置参考值
-                lastScale = 1.0
+            .onEnded { value in
+                // 应用最终缩放值（带边界限制）
+                let newScale = zoomFactor * value
+                zoomFactor = max(1.0,min(newScale, cameraViewModel.maxZoomFactor))
+                self.cameraViewModel.setZoomFactor(zoomFactor)
             }
     }
 
@@ -384,6 +420,10 @@ struct CameraView: View {
                 if showSnapshot { return }
                 guard let sourceImage = newValue else { return }
                 generateSnapshot(sourceImage: sourceImage)
+            }
+            .onChange(of: cameraViewModel.cameraType) { newValue in
+                self.zoomFactor = Theme.minZoomFactor
+                self.cameraViewModel.setZoomFactor(zoomFactor)
             }
     }
 }

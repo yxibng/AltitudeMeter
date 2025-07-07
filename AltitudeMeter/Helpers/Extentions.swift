@@ -7,6 +7,45 @@
 
 import SwiftUI
 
+extension TimeInterval {
+
+    var durationString: String { //self should in seconds
+        let seconds = Int(self)
+        let hours = seconds / 3600
+        let remainingSeconds = seconds % 3600
+        let minutes = remainingSeconds / 60
+        let secs = remainingSeconds % 60
+        if hours > 0 {
+            return String(format: "%02d:%02d:%02d", hours, minutes, secs)
+        } else {
+            return String(format: "%02d:%02d", minutes, secs)
+        }
+    }
+    
+}
+
+
+
+extension Double {
+    /// 近似相等比较
+    func isAlmostEqual(to other: Double, tolerance: Double = 1e-12) -> Bool {
+        return abs(self - other) <= tolerance
+    }
+}
+
+extension Float {
+    func isAlmostEqual(to other: Float, tolerance: Float = 1e-6) -> Bool {
+        return abs(self - other) <= tolerance
+    }
+}
+
+extension CGFloat {
+    func isAlmostEqual(to other: CGFloat, tolerance: Double = 1e-12) -> Bool {
+        return abs(self - other) <= tolerance
+    }
+}
+
+
 extension CGSize {
     var revert: CGSize {
         CGSize(width: self.height, height: self.width)

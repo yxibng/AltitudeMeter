@@ -83,6 +83,14 @@ class CameraViewModel: ObservableObject {
                 print("Camera video size updated: \(size), aspect ratio: \(self.aspectRatio)")
             }
             .store(in: &cancellables)
+        
+        camera.$maxZoomFactor
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] zoomFactor in
+                guard let self else { return }
+                self.maxZoomFactor = zoomFactor
+            }
+            .store(in: &cancellables)
         return camera
     }()
 
@@ -127,6 +135,11 @@ class CameraViewModel: ObservableObject {
     @ObservedObject private var orientationManager = OrientationManager()
     @Published var isRecording = false // video recording state
     @Published var videoSize = CGSize.zero // output video/photo size, potrait mode is width < height, landscape mode is width > height
+    @Published var maxZoomFactor: CGFloat = 1.0 // maximum zoom factor for camera
+    @Published var recordingDuration: TimeInterval = 0.0 // duration of the current recording
+    private var timer: DispatchSourceTimer?
+    
+    
     @Published var aspectRatio: CGFloat = Theme.previewAspectRatio {
         didSet {
             print("aspectRatio updated: \(aspectRatio)")
@@ -191,11 +204,14 @@ class CameraViewModel: ObservableObject {
         self.assetWriter.startRecording(outputURL: url, videoSize: self.videoSize)
         self.eventSubject.send(.didStartRecording)
         self.isRecording = true
+        self.startRecordingTimer()
+        
     }
 
     func stopRecording() {
         self.assetWriter.stopRecording {[weak self] outputURL in
             guard let self else { return }
+            self.stopRecordingTimer()
             // Handle post-recording actions, like saving the video or showing a preview
             print("Recording stopped and saved to: \(outputURL?.absoluteString ?? "Unknown URL")")
             // TOOD: report to user
@@ -239,3 +255,28 @@ private extension CameraViewModel {
         }
     }
 }
+
+
+private extension CameraViewModel {
+    
+    func startRecordingTimer() {
+        self.recordingDuration = 0.0
+        timer?.cancel()
+        timer = DispatchSource.makeTimerSource(queue: .main)
+        timer?.schedule(deadline: .now(), repeating: 1.0)
+        timer?.setEventHandler(handler: { [weak self] in
+            guard let self else { return }
+            self.recordingDuration += 1.0
+            print("Recording duration: \(self.recordingDuration) seconds")
+        })
+        timer?.resume()
+    }
+    
+    func stopRecordingTimer() {
+        self.timer?.cancel()
+        timer = nil
+    }
+
+    
+}
+

@@ -15,6 +15,9 @@ extension AVCaptureDevice {
         let dims = CMVideoFormatDescriptionGetDimensions(activeFormat.formatDescription)
         return CGSize(width: CGFloat(dims.width), height: CGFloat(dims.height))
     }
+    var maxZoomFactor: CGFloat {
+        activeFormat.videoMaxZoomFactor
+    }
 }
 
 class Camera: NSObject {
@@ -37,6 +40,7 @@ class Camera: NSObject {
                     defer {
                         captureSession.commitConfiguration()
                         videoSize = captureDevice?.resolution ?? .zero
+                        maxZoomFactor = captureDevice?.maxZoomFactor ?? 1.0
                     }
                     captureSession.sessionPreset = .hd1920x1080
                     // add audio input if it doesn't exist
@@ -68,7 +72,7 @@ class Camera: NSObject {
                     defer {
                         captureSession.commitConfiguration()
                         videoSize = captureDevice?.resolution ?? .zero
-                        print("type photo, videoSize = \(videoSize)")
+                        maxZoomFactor = captureDevice?.maxZoomFactor ?? 1.0
                     }
                     captureSession.sessionPreset = .photo
                     // remove audio input if it exists
@@ -99,6 +103,7 @@ class Camera: NSObject {
     private var audioDeviceInput: AVCaptureDeviceInput?
     private var photoOutput: AVCapturePhotoOutput?
     @Published var videoSize: CGSize = .zero
+    @Published var maxZoomFactor: CGFloat = 1.0
     private lazy var videoOutput: AVCaptureVideoDataOutput = {
         let videoOutput = AVCaptureVideoDataOutput()
         videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "VideoDataOutputQueue"))
@@ -333,6 +338,7 @@ class Camera: NSObject {
             }
         }
         self.videoSize = captureDevice?.resolution ?? .zero
+        self.maxZoomFactor = captureDevice?.maxZoomFactor ?? 1.0
     }
 
     func start() async {
@@ -357,6 +363,7 @@ class Camera: NSObject {
             configureCaptureSession { success in
                 guard success else { return }
                 self.videoSize = self.captureDevice?.resolution ?? .zero
+                self.maxZoomFactor = self.captureDevice?.maxZoomFactor ?? 1.0
                 self.captureSession.startRunning()
             }
         }
