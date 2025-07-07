@@ -83,12 +83,12 @@ class CameraViewModel: ObservableObject {
                 print("Camera video size updated: \(size), aspect ratio: \(self.aspectRatio)")
             }
             .store(in: &cancellables)
-        
+
         camera.$maxZoomFactor
             .receive(on: DispatchQueue.main)
             .sink { [weak self] zoomFactor in
                 guard let self else { return }
-                self.maxZoomFactor = zoomFactor
+                maxZoomFactor = zoomFactor
             }
             .store(in: &cancellables)
         return camera
@@ -138,8 +138,7 @@ class CameraViewModel: ObservableObject {
     @Published var maxZoomFactor: CGFloat = 1.0 // maximum zoom factor for camera
     @Published var recordingDuration: TimeInterval = 0.0 // duration of the current recording
     private var timer: DispatchSourceTimer?
-    
-    
+
     @Published var aspectRatio: CGFloat = Theme.previewAspectRatio {
         didSet {
             print("aspectRatio updated: \(aspectRatio)")
@@ -205,13 +204,12 @@ class CameraViewModel: ObservableObject {
         self.eventSubject.send(.didStartRecording)
         self.isRecording = true
         self.startRecordingTimer()
-        
     }
 
     func stopRecording() {
         self.assetWriter.stopRecording {[weak self] outputURL in
             guard let self else { return }
-            self.stopRecordingTimer()
+            stopRecordingTimer()
             // Handle post-recording actions, like saving the video or showing a preview
             print("Recording stopped and saved to: \(outputURL?.absoluteString ?? "Unknown URL")")
             // TOOD: report to user
@@ -256,9 +254,7 @@ private extension CameraViewModel {
     }
 }
 
-
 private extension CameraViewModel {
-    
     func startRecordingTimer() {
         self.recordingDuration = 0.0
         timer?.cancel()
@@ -271,12 +267,9 @@ private extension CameraViewModel {
         })
         timer?.resume()
     }
-    
+
     func stopRecordingTimer() {
         self.timer?.cancel()
         timer = nil
     }
-
-    
 }
-

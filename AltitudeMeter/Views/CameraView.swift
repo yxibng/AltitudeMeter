@@ -62,7 +62,7 @@ struct CameraView: View {
                         .foregroundStyle( cameraViewModel.cameraType == .photo ? .white : .white.opacity(0.5))
                 }
                 .disabled(cameraViewModel.isRecording)
-                
+
                 Spacer().frame(width: 32)
                 Button {
                     cameraViewModel.setCameraType(.video)
@@ -261,30 +261,29 @@ struct CameraView: View {
                         self.focusSpot = nil  // 自动消失
                     }
             }
-            
+
             if cameraViewModel.isRecording {
-                Color.clear.aspectRatio(self.cameraViewModel.aspectRatio, contentMode: .fit)
+                Color.clear.aspectRatio(cameraViewModel.aspectRatio, contentMode: .fit)
                     .overlay(alignment: .topTrailing) {
-                        Text(self.cameraViewModel.recordingDuration.durationString)
+                        Text(cameraViewModel.recordingDuration.durationString)
                             .padding(4)
                             .background(Color.red).cornerRadius(2)
                             .foregroundStyle(.white)
                     }
             }
             if showZoomFactorView {
-                Color.clear.aspectRatio(self.cameraViewModel.aspectRatio, contentMode: .fit).overlay {
+                Color.clear.aspectRatio(cameraViewModel.aspectRatio, contentMode: .fit).overlay {
                     VStack {
                         Spacer()
-                        Text("\(String(format: "%.1fX", zoomFactor * self.gestureScale))")
+                        Text("\(String(format: "%.1fX", zoomFactor * gestureScale))")
                             .foregroundStyle(.red)
                             .task {
                                 try? await Task.sleep(nanoseconds: 1_000_000_000)
-                                self.showZoomFactorView = false
+                                showZoomFactorView = false
                             }
                     }
                 }
             }
-            
         }
     }
 
@@ -295,13 +294,13 @@ struct CameraView: View {
     @State private var showZoomFactorView = false
     @State private var showVideoEditor = false
     @State private var outpuURL: URL?
-    
+
     var magnificationGesture: some Gesture {
         MagnificationGesture()
               .updating($gestureScale) { value, state, _ in
                 // 计算预期缩放比例
                 let newScale = zoomFactor * value
-                
+
                 // 在 updating 中应用边界限制
                   if newScale <= Theme.minZoomFactor {
                     // 达到最小缩放时，反推手势值
@@ -313,14 +312,14 @@ struct CameraView: View {
                     // 正常范围内使用原始值
                     state = value
                 }
-                  self.cameraViewModel.setZoomFactor(zoomFactor * value)
-                  self.showZoomFactorView = true
-            }
+                  cameraViewModel.setZoomFactor(zoomFactor * value)
+                  showZoomFactorView = true
+              }
             .onEnded { value in
                 // 应用最终缩放值（带边界限制）
                 let newScale = zoomFactor * value
-                zoomFactor = max(1.0,min(newScale, cameraViewModel.maxZoomFactor))
-                self.cameraViewModel.setZoomFactor(zoomFactor)
+                zoomFactor = max(1.0, min(newScale, cameraViewModel.maxZoomFactor))
+                cameraViewModel.setZoomFactor(zoomFactor)
             }
     }
 
@@ -421,9 +420,9 @@ struct CameraView: View {
                 guard let sourceImage = newValue else { return }
                 generateSnapshot(sourceImage: sourceImage)
             }
-            .onChange(of: cameraViewModel.cameraType) { newValue in
-                self.zoomFactor = Theme.minZoomFactor
-                self.cameraViewModel.setZoomFactor(zoomFactor)
+            .onChange(of: cameraViewModel.cameraType) { _ in
+                zoomFactor = Theme.minZoomFactor
+                cameraViewModel.setZoomFactor(zoomFactor)
             }
     }
 }
