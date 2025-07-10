@@ -312,7 +312,7 @@ struct CameraView: View {
                     // 正常范围内使用原始值
                     state = value
                 }
-                  cameraViewModel.setZoomFactor(zoomFactor * value)
+                  cameraViewModel.setZoomFactor(zoomFactor * state)
                   showZoomFactorView = true
               }
             .onEnded { value in

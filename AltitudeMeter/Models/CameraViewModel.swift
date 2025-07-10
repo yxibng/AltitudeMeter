@@ -10,6 +10,14 @@ import Combine
 import SwiftUI
 
 class CameraViewModel: ObservableObject {
+    
+    enum CameraConfig {
+        static let maxZoomFactor = 10.0 // Maximum zoom factor for the camera
+        static let minZoomFactor = 1.0 // Minimum zoom factor for the camera
+    }
+    
+    
+    
     deinit {
         camera.stop()
         orientationManager.stop()
@@ -88,7 +96,7 @@ class CameraViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] zoomFactor in
                 guard let self else { return }
-                maxZoomFactor = zoomFactor
+                maxZoomFactor = min(CameraConfig.maxZoomFactor,zoomFactor)
             }
             .store(in: &cancellables)
         return camera
@@ -135,7 +143,7 @@ class CameraViewModel: ObservableObject {
     @ObservedObject private var orientationManager = OrientationManager()
     @Published var isRecording = false // video recording state
     @Published var videoSize = CGSize.zero // output video/photo size, potrait mode is width < height, landscape mode is width > height
-    @Published var maxZoomFactor: CGFloat = 1.0 // maximum zoom factor for camera
+    @Published var maxZoomFactor: CGFloat = CameraConfig.minZoomFactor // maximum zoom factor for camera
     @Published var recordingDuration: TimeInterval = 0.0 // duration of the current recording
     private var timer: DispatchSourceTimer?
 
