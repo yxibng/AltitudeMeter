@@ -120,11 +120,13 @@ class AssetWritter: NSObject {
             videoWriterInput = nil
             audioWriterInput = nil
             isRecording = false
+            startTime = .zero
         }
     }
 
     func writeAudio(sampleBuffer: CMSampleBuffer) {
         if !isRecording { return }
+        if startTime == .zero { return }
         // Handle audio sample
         if let audioWriterInput,
            audioWriterInput.isReadyForMoreMediaData {

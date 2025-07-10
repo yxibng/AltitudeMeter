@@ -60,6 +60,7 @@ struct CameraView: View {
                     Text("照片")
                         .font(.system(size: 16, weight: .bold))
                         .foregroundStyle( cameraViewModel.cameraType == .photo ? .white : .white.opacity(0.5))
+                        .padding()
                 }
                 .disabled(cameraViewModel.isRecording)
 
@@ -70,6 +71,7 @@ struct CameraView: View {
                     Text("视频")
                         .font(.system(size: 16, weight: .bold))
                         .foregroundStyle( cameraViewModel.cameraType == .video ? .white : .white.opacity(0.5))
+                        .padding()
                 }
                 .disabled(cameraViewModel.isRecording)
             }
@@ -128,7 +130,7 @@ struct CameraView: View {
                     leading: 32,
                     bottom: 0,
                     trailing: 32
-                ))
+                )).offset(y: -8)
             } else {
                 HStack {
                     makeButton(imageName: "arrowshape.turn.up.backward") {
@@ -165,7 +167,7 @@ struct CameraView: View {
                     leading: 32,
                     bottom: 0,
                     trailing: 32
-                ))
+                )).offset(y: -8)
             }
         }
     }
@@ -410,7 +412,7 @@ struct CameraView: View {
                     break
                 }
             }
-            .sheet(isPresented: $showVideoEditor) {
+            .fullScreenCover(isPresented: $showVideoEditor) {
                 if let url = outpuURL {
                     VideoEditorView(url: url)
                 }

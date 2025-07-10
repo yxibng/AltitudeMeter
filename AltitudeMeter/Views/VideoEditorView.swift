@@ -114,12 +114,10 @@ struct VideoEditorView: View {
 
     var body: some View {
         VStack {
+            Spacer()
             VideoPlayer(player: videoEditorViewModel.player)
                 .disabled(true)
-                .aspectRatio(9 / 16.0, contentMode: .fill)
-                .padding(
-                    EdgeInsets(top: 0, leading: 32, bottom: 0, trailing: 32)
-                )
+                .aspectRatio(9.0 / 16.0, contentMode: .fit)
                 .onAppear {
                     videoEditorViewModel.loadVideo(url: url)
                     frameExtractor.loadVideo(from: url)
