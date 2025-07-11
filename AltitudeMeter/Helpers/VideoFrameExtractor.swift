@@ -8,7 +8,7 @@ import AVFoundation
 import SwiftUI
 
 // 视频帧模型
-struct VideoFrame: Identifiable, Hashable {
+struct VideoFrame: Identifiable, Hashable, Equatable {
     let id = UUID()
     let time: CMTime  // 帧在视频中的时间点
     let image: UIImage?  // 帧图像
