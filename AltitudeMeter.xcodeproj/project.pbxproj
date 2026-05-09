@@ -357,7 +357,7 @@
 /* Begin XCRemoteSwiftPackageReference section */
 		86AAEE622DF2CFFD002ACDBD /* XCRemoteSwiftPackageReference "swift-sunrise-sunset" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "git@github.com:natesabrown/swift-sunrise-sunset.git";
+			repositoryURL = "https://github.com/natesabrown/swift-sunrise-sunset.git";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 0.2.0;
@@ -365,7 +365,7 @@
 		};
 		86E0D9DE2E17C28D00263ECD /* XCRemoteSwiftPackageReference "SnapKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "git@github.com:SnapKit/SnapKit.git";
+			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 5.0.0;
@@ -373,7 +373,7 @@
 		};
 		86F2D6B42E002A29009AD382 /* XCRemoteSwiftPackageReference "AlertToast" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "git@github.com:elai950/AlertToast.git";
+			repositoryURL = "https://github.com/elai950/AlertToast.git";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 1.3.9;

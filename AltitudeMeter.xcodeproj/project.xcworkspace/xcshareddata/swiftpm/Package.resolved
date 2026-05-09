@@ -4,7 +4,7 @@
     {
       "identity" : "alerttoast",
       "kind" : "remoteSourceControl",
-      "location" : "git@github.com:elai950/AlertToast.git",
+      "location" : "https://github.com/elai950/AlertToast.git",
       "state" : {
         "revision" : "b39252eacd159904afd7d718bba0afabb87f2f2f",
         "version" : "1.3.9"
@@ -13,7 +13,7 @@
     {
       "identity" : "snapkit",
       "kind" : "remoteSourceControl",
-      "location" : "git@github.com:SnapKit/SnapKit.git",
+      "location" : "https://github.com/SnapKit/SnapKit.git",
       "state" : {
         "revision" : "2842e6e84e82eb9a8dac0100ca90d9444b0307f4",
         "version" : "5.7.1"
@@ -22,7 +22,7 @@
     {
       "identity" : "swift-sunrise-sunset",
       "kind" : "remoteSourceControl",
-      "location" : "git@github.com:natesabrown/swift-sunrise-sunset.git",
+      "location" : "https://github.com/natesabrown/swift-sunrise-sunset.git",
       "state" : {
         "revision" : "c1c8d064fc7559de21d4965564155a2eea9c4769",
         "version" : "0.2.0"
