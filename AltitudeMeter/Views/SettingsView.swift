@@ -94,6 +94,21 @@ struct SettingsView: View {
             }
 
             HStack {
+                makeLeadingView(imageName: "paintpalette", title: "主题")
+                Spacer()
+                Picker(
+                    "Select a theme",
+                    selection: $dataModel.altitudeModel.preferences.appTheme
+                ) {
+                    ForEach(AppTheme.allCases) { option in
+                        Text(option.title).tag(option)
+                    }
+                }
+                .fixedSize()
+                .pickerStyle(.menu)
+            }
+
+            HStack {
                 makeLeadingView(imageName: "bookmark.circle", title: "版本号")
                 Spacer()
                 Text(

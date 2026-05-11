@@ -27,33 +27,107 @@ struct MainContentView: View {
         return Color(red: r, green: g, blue: b)
     }
 
+    private var selectedTheme: AppTheme {
+        dataModel.altitudeModel.preferences.appTheme
+    }
+
     private var backgroundTop: Color {
-        blend((0.40, 0.25, 0.18), (0.16, 0.27, 0.43), ratio: dataModel.altitudeToneRatio)
+        switch selectedTheme {
+        case .vividSky:
+            return blend((0.62, 0.30, 0.16), (0.18, 0.30, 0.62), ratio: dataModel.altitudeToneRatio)
+        case .sunsetGlow:
+            return blend((0.75, 0.24, 0.22), (0.52, 0.18, 0.46), ratio: dataModel.altitudeToneRatio)
+        case .emeraldAurora:
+            return blend((0.14, 0.44, 0.30), (0.10, 0.34, 0.52), ratio: dataModel.altitudeToneRatio)
+        case .monochromeIce:
+            return blend((0.28, 0.35, 0.45), (0.18, 0.30, 0.44), ratio: dataModel.altitudeToneRatio)
+        }
     }
 
     private var backgroundBottom: Color {
-        blend((0.05, 0.30, 0.53), (0.02, 0.22, 0.46), ratio: dataModel.altitudeToneRatio)
+        switch selectedTheme {
+        case .vividSky:
+            return blend((0.00, 0.34, 0.78), (0.01, 0.18, 0.58), ratio: dataModel.altitudeToneRatio)
+        case .sunsetGlow:
+            return blend((0.16, 0.28, 0.64), (0.08, 0.16, 0.44), ratio: dataModel.altitudeToneRatio)
+        case .emeraldAurora:
+            return blend((0.05, 0.46, 0.66), (0.04, 0.24, 0.42), ratio: dataModel.altitudeToneRatio)
+        case .monochromeIce:
+            return blend((0.10, 0.34, 0.56), (0.06, 0.20, 0.34), ratio: dataModel.altitudeToneRatio)
+        }
     }
 
     private var ringColor: Color {
-        blend((0.89, 0.85, 0.79), (0.84, 0.90, 0.96), ratio: dataModel.altitudeToneRatio)
-            .opacity(0.74)
+        switch selectedTheme {
+        case .vividSky:
+            return blend((0.95, 0.92, 0.84), (0.82, 0.90, 1.00), ratio: dataModel.altitudeToneRatio)
+                .opacity(0.82)
+        case .sunsetGlow:
+            return blend((0.98, 0.87, 0.74), (0.90, 0.82, 0.98), ratio: dataModel.altitudeToneRatio)
+                .opacity(0.80)
+        case .emeraldAurora:
+            return blend((0.84, 0.96, 0.88), (0.80, 0.90, 0.98), ratio: dataModel.altitudeToneRatio)
+                .opacity(0.80)
+        case .monochromeIce:
+            return blend((0.90, 0.94, 0.98), (0.82, 0.90, 0.98), ratio: dataModel.altitudeToneRatio)
+                .opacity(0.80)
+        }
     }
 
     private var centerTop: Color {
-        blend((0.79, 0.59, 0.45), (0.54, 0.66, 0.82), ratio: dataModel.altitudeToneRatio)
+        switch selectedTheme {
+        case .vividSky:
+            return blend((0.98, 0.63, 0.26), (0.58, 0.74, 0.94), ratio: dataModel.altitudeToneRatio)
+        case .sunsetGlow:
+            return blend((0.98, 0.54, 0.30), (0.74, 0.49, 0.92), ratio: dataModel.altitudeToneRatio)
+        case .emeraldAurora:
+            return blend((0.35, 0.84, 0.58), (0.38, 0.74, 0.94), ratio: dataModel.altitudeToneRatio)
+        case .monochromeIce:
+            return blend((0.72, 0.80, 0.90), (0.62, 0.74, 0.88), ratio: dataModel.altitudeToneRatio)
+        }
     }
 
     private var centerBottom: Color {
-        blend((0.24, 0.52, 0.82), (0.18, 0.46, 0.76), ratio: dataModel.altitudeToneRatio)
+        switch selectedTheme {
+        case .vividSky:
+            return blend((0.18, 0.58, 0.96), (0.08, 0.42, 0.90), ratio: dataModel.altitudeToneRatio)
+        case .sunsetGlow:
+            return blend((0.38, 0.44, 0.90), (0.20, 0.30, 0.66), ratio: dataModel.altitudeToneRatio)
+        case .emeraldAurora:
+            return blend((0.12, 0.68, 0.78), (0.10, 0.42, 0.66), ratio: dataModel.altitudeToneRatio)
+        case .monochromeIce:
+            return blend((0.44, 0.62, 0.82), (0.30, 0.46, 0.68), ratio: dataModel.altitudeToneRatio)
+        }
     }
 
     private var northMarker: Color {
-        blend((0.93, 0.63, 0.26), (0.85, 0.56, 0.30), ratio: dataModel.altitudeToneRatio)
+        switch selectedTheme {
+        case .vividSky:
+            return blend((1.00, 0.62, 0.15), (0.95, 0.50, 0.23), ratio: dataModel.altitudeToneRatio)
+        case .sunsetGlow:
+            return blend((1.00, 0.52, 0.30), (0.94, 0.42, 0.38), ratio: dataModel.altitudeToneRatio)
+        case .emeraldAurora:
+            return blend((0.40, 0.86, 0.54), (0.34, 0.76, 0.70), ratio: dataModel.altitudeToneRatio)
+        case .monochromeIce:
+            return blend((0.70, 0.80, 0.92), (0.62, 0.72, 0.88), ratio: dataModel.altitudeToneRatio)
+        }
     }
 
     private var southMarker: Color {
-        blend((0.24, 0.66, 0.93), (0.26, 0.72, 0.96), ratio: dataModel.altitudeToneRatio)
+        switch selectedTheme {
+        case .vividSky:
+            return blend((0.10, 0.66, 1.00), (0.16, 0.78, 1.00), ratio: dataModel.altitudeToneRatio)
+        case .sunsetGlow:
+            return blend((0.44, 0.62, 1.00), (0.56, 0.72, 1.00), ratio: dataModel.altitudeToneRatio)
+        case .emeraldAurora:
+            return blend((0.20, 0.76, 0.94), (0.24, 0.86, 0.94), ratio: dataModel.altitudeToneRatio)
+        case .monochromeIce:
+            return blend((0.56, 0.70, 0.92), (0.62, 0.78, 0.94), ratio: dataModel.altitudeToneRatio)
+        }
+    }
+
+    private var altitudeOutlineColor: Color {
+        Color.black.opacity(0.45)
     }
 
     private var altitudeFontSize: CGFloat {
@@ -88,7 +162,7 @@ struct MainContentView: View {
         ZStack {
             RadialGradient(
                 colors: [
-                    Color.white.opacity(0.14),
+                    Color.white.opacity(0.20),
                     Color.white.opacity(0.0),
                 ],
                 center: .top,
@@ -98,9 +172,9 @@ struct MainContentView: View {
 
             LinearGradient(
                 colors: [
-                    Color.white.opacity(0.06),
+                    Color.white.opacity(0.10),
                     Color.clear,
-                    Color.black.opacity(0.10),
+                    Color.black.opacity(0.16),
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -151,7 +225,12 @@ struct MainContentView: View {
                     .monospacedDigit()
                     .minimumScaleFactor(0.1)
                     .lineLimit(1)
-                    .foregroundColor(.white)
+                    .foregroundStyle(.white)
+                    .shadow(color: altitudeOutlineColor, radius: 0, x: 2, y: 2)
+                    .shadow(color: altitudeOutlineColor, radius: 0, x: -2, y: -2)
+                    .shadow(color: altitudeOutlineColor, radius: 0, x: -2, y: 2)
+                    .shadow(color: altitudeOutlineColor, radius: 0, x: 2, y: -2)
+                    .shadow(color: Color.white.opacity(0.65), radius: 14, x: 0, y: 0)
                 Text("当前速度\(dataModel.speed)")
                     .font(.system(size: 20, weight: .bold))
                     .minimumScaleFactor(0.1)

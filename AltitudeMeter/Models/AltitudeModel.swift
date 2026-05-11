@@ -125,6 +125,28 @@ enum BottomConentType: String, CaseIterable, Identifiable, Codable {
     }
 }
 
+enum AppTheme: String, CaseIterable, Identifiable, Codable {
+    case vividSky
+    case sunsetGlow
+    case emeraldAurora
+    case monochromeIce
+
+    var id: String { self.rawValue }
+
+    var title: String {
+        switch self {
+        case .vividSky:
+            return "晴空蓝橙"
+        case .sunsetGlow:
+            return "落日琥珀"
+        case .emeraldAurora:
+            return "极光翡翠"
+        case .monochromeIce:
+            return "冰川极简"
+        }
+    }
+}
+
 extension CLLocationCoordinate2D: @retroactive Equatable {
     public static func == (lhs: CLLocationCoordinate2D, rhs: CLLocationCoordinate2D)
     -> Bool {
@@ -166,6 +188,51 @@ struct Preferences: Codable, Equatable {
         didSet {
             save()
         }
+    }
+    var appTheme: AppTheme = .vividSky {
+        didSet {
+            save()
+        }
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case altitudeUnit
+        case gpsDisplayType
+        case pressureUnit
+        case bottomContentType
+        case appTheme
+    }
+
+    init(
+        altitudeUnit: AltitudeUnitType = .meter,
+        gpsDisplayType: GpsDisplayType = .dms,
+        pressureUnit: PressureUnitType = .kPa,
+        bottomContentType: BottomConentType = .gps,
+        appTheme: AppTheme = .vividSky
+    ) {
+        self.altitudeUnit = altitudeUnit
+        self.gpsDisplayType = gpsDisplayType
+        self.pressureUnit = pressureUnit
+        self.bottomContentType = bottomContentType
+        self.appTheme = appTheme
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        altitudeUnit = try container.decodeIfPresent(AltitudeUnitType.self, forKey: .altitudeUnit) ?? .meter
+        gpsDisplayType = try container.decodeIfPresent(GpsDisplayType.self, forKey: .gpsDisplayType) ?? .dms
+        pressureUnit = try container.decodeIfPresent(PressureUnitType.self, forKey: .pressureUnit) ?? .kPa
+        bottomContentType = try container.decodeIfPresent(BottomConentType.self, forKey: .bottomContentType) ?? .gps
+        appTheme = try container.decodeIfPresent(AppTheme.self, forKey: .appTheme) ?? .vividSky
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(altitudeUnit, forKey: .altitudeUnit)
+        try container.encode(gpsDisplayType, forKey: .gpsDisplayType)
+        try container.encode(pressureUnit, forKey: .pressureUnit)
+        try container.encode(bottomContentType, forKey: .bottomContentType)
+        try container.encode(appTheme, forKey: .appTheme)
     }
 
     init() {

@@ -141,9 +141,10 @@ struct Compass<Content: View>: View {
                     .background {
                         Circle().fill(
                             LinearGradient(
-                                gradient: Gradient(colors: [
-                                    centerGradientTop,
-                                    centerGradientBottom,
+                                gradient: Gradient(stops: [
+                                    .init(color: centerGradientTop, location: 0.0),
+                                    .init(color: centerGradientTop.opacity(0.82), location: 0.38),
+                                    .init(color: centerGradientBottom, location: 1.0),
                                 ]),
                                 startPoint: .top,
                                 endPoint: .bottom
