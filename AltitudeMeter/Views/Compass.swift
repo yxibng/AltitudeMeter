@@ -51,6 +51,11 @@ struct Triangle: Shape {
 struct Compass<Content: View>: View {
     @Binding var degrees: Double
     @State private var currentDegrees: Double = 0
+    var outerRingColor: Color = Color.white.opacity(0.5)
+    var centerGradientTop: Color = Color.orange.opacity(0.5)
+    var centerGradientBottom: Color = Color.blue.opacity(0.5)
+    var northMarkerColor: Color = Color.orange.opacity(0.5)
+    var southMarkerColor: Color = Color.blue.opacity(0.5)
     @ViewBuilder var makeContent: () -> Content
 
     var triangleWidth: CGFloat = 70
@@ -75,7 +80,7 @@ struct Compass<Content: View>: View {
         GeometryReader { geometry in
             ZStack {
                 Circle()
-                    .fill(Color.white.opacity(0.5))
+                    .fill(outerRingColor)
                     .blur(radius: 0.8)
                     .frame(
                         width: min(geometry.size.width, geometry.size.height),
@@ -95,7 +100,7 @@ struct Compass<Content: View>: View {
 
                 VStack {
                     Triangle(radius: triangleRadius(geometry: geometry))
-                        .fill(Color.orange.opacity(0.5))
+                        .fill(northMarkerColor)
                         .overlay(content: {
                             Text("N")
                                 .foregroundColor(.white)
@@ -106,7 +111,7 @@ struct Compass<Content: View>: View {
                     Spacer()
 
                     Triangle(radius: triangleRadius(geometry: geometry))
-                        .fill(Color.blue.opacity(0.5))
+                        .fill(southMarkerColor)
                         .overlay(content: {
                             Text("S").foregroundColor(.white)
                         })
@@ -137,8 +142,8 @@ struct Compass<Content: View>: View {
                         Circle().fill(
                             LinearGradient(
                                 gradient: Gradient(colors: [
-                                    .orange.opacity(0.5),
-                                    .blue.opacity(0.5),
+                                    centerGradientTop,
+                                    centerGradientBottom,
                                 ]),
                                 startPoint: .top,
                                 endPoint: .bottom

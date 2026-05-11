@@ -188,6 +188,16 @@ struct Preferences: Codable, Equatable {
 }
 
 extension AltitudeDataModel {
+    var altitudeToneRatio: Double {
+        guard let altitude = altitudeModel.altitude else {
+            return 0.35
+        }
+
+        // -200m to 3600m maps to warm-to-cool tone transition.
+        let normalized = (altitude + 200.0) / 3800.0
+        return min(max(normalized, 0.0), 1.0)
+    }
+
     var pressure: String {
         guard let pressure = altitudeModel.pressure else {
             return "N/A"
@@ -239,12 +249,19 @@ extension AltitudeDataModel {
         guard let altitude = altitudeModel.altitude else {
             return "N/A"
         }
+        let convertedAltitude: Double
         switch altitudeModel.preferences.altitudeUnit {
         case .meter:
-            return String(format: "%.1f", altitude)
+            convertedAltitude = altitude
         case .feet:
-            return String(format: "%.1f", altitude / 0.3048)  // 1米 = 3.28084英尺
+            convertedAltitude = altitude / 0.3048  // 1米 = 3.28084英尺
         }
+
+        let integerDigits = String(abs(Int(convertedAltitude))).count
+        if integerDigits > 3 {
+            return String(format: "%.0f", convertedAltitude)
+        }
+        return String(format: "%.1f", convertedAltitude)
     }
 
     var speed: String {
