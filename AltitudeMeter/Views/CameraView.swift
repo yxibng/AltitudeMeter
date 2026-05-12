@@ -8,7 +8,7 @@
 import SwiftUI
 
 enum Theme {
-    static let previewAspectRatio: CGFloat = 9 / 16.0
+    static let previewAspectRatio: CGFloat = 3 / 4.0
     static let minZoomFactor: CGFloat = 1.0
 }
 
@@ -38,7 +38,9 @@ struct CameraView: View {
         static let buttonWidth: CGFloat = 32
         static let takePhotoButtonWidth: CGFloat = 50
         static let takePhotoButtonInnerWidth: CGFloat = 40
-        static let watermarkPadding: CGFloat = 20
+        static let watermarkHorizontalPadding: CGFloat = 20
+        static let watermarkBottomPadding: CGFloat = 8
+        static let watermarkMaxWidth: CGFloat = 340
     }
 
     func makeButton(imageName: String, action: @escaping () -> Void)
@@ -180,12 +182,40 @@ struct CameraView: View {
         return CGSize(width: width, height: height)
     }
 
+    private var watermarkMaxWidth: CGFloat {
+        min(
+            Layout.watermarkMaxWidth,
+            max(180, videoSizeOnScreen.width - Layout.watermarkHorizontalPadding * 2)
+        )
+    }
+
+    private var altitudeAndPressureLine: String {
+        "海拔 \(altitudeDataMode.altitude)\(altitudeDataMode.altitudeModel.preferences.altitudeUnit.title) · 气压 \(altitudeDataMode.pressure)"
+    }
+
+    @ViewBuilder
     private var watermarkContent: some View {
+        switch altitudeDataMode.altitudeModel.preferences.watermarkStyle {
+        case .card:
+            watermarkCardContent
+        case .compact:
+            watermarkCompactContent
+        case .minimal:
+            watermarkMinimalContent
+        }
+    }
+
+    private var watermarkRenderContent: some View {
+        watermarkContent
+            .frame(maxWidth: watermarkMaxWidth, alignment: .leading)
+    }
+
+    private var watermarkCardContent: some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(alignment: .center, spacing: 5) {
                 Image(.launchIcon)
                     .resizable()
-                    .frame(width: 44, height: 44)
+                    .frame(width: 36, height: 36)
                 VStack(alignment: .leading, spacing: 0) {
                     Text("海拔：")
                         .font(.system(size: 14, weight: .medium))
@@ -206,17 +236,87 @@ struct CameraView: View {
             Text(altitudeDataMode.coordinate)
                 .font(.system(size: 14, weight: .bold))
                 .foregroundColor(.white)
-            Text(altitudeDataMode.geocodeLocation).font(
-                .system(size: 14, weight: .bold)
-            )
-            .foregroundColor(.white)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+
+            Text(altitudeDataMode.geocodeLocation)
+                .font(.system(size: 14, weight: .bold))
+                .foregroundColor(.white)
+                .lineLimit(2)
+                .truncationMode(.tail)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background {
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(Color.black.opacity(0.35))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .stroke(Color.white.opacity(0.20), lineWidth: 1)
+                }
+        }
+        .shadow(color: .black.opacity(0.25), radius: 8, x: 0, y: 3)
+    }
+
+    private var watermarkCompactContent: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 6) {
+                Image(.launchIcon)
+                    .resizable()
+                    .frame(width: 22, height: 22)
+                Text(altitudeAndPressureLine)
+                    .font(.system(size: 13, weight: .semibold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
+            Text(altitudeDataMode.coordinate)
+                .font(.system(size: 13, weight: .semibold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+            Text(altitudeDataMode.geocodeLocation)
+                .font(.system(size: 12, weight: .semibold))
+                .lineLimit(1)
+                .truncationMode(.tail)
+        }
+        .foregroundColor(.white)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background {
+            RoundedRectangle(cornerRadius: 9, style: .continuous)
+                .fill(Color.black.opacity(0.30))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 9, style: .continuous)
+                        .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                }
+        }
+    }
+
+    private var watermarkMinimalContent: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text("海拔 \(altitudeDataMode.altitude)\(altitudeDataMode.altitudeModel.preferences.altitudeUnit.title)")
+                .font(.system(size: 15, weight: .bold))
+            Text(altitudeDataMode.coordinate)
+                .font(.system(size: 12, weight: .semibold))
+                .lineLimit(1)
+                .truncationMode(.tail)
+        }
+        .foregroundColor(.white)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
+        .background {
+            Capsule(style: .continuous)
+                .fill(Color.black.opacity(0.28))
+                .overlay {
+                    Capsule(style: .continuous)
+                        .stroke(Color.white.opacity(0.16), lineWidth: 1)
+                }
         }
     }
 
     var watermark: some View {
-        Color.clear.overlay(alignment: .topLeading) {
-            watermarkContent
-                .offset(x: Layout.watermarkPadding, y: Layout.watermarkPadding)
+        Color.clear.overlay(alignment: .bottomLeading) {
+            watermarkRenderContent
                 .background(content: {
                     GeometryReader { proxy in
                         Color.clear.task(id: proxy.size) {
@@ -225,6 +325,8 @@ struct CameraView: View {
                         }
                     }
                 })
+                .padding(.leading, Layout.watermarkHorizontalPadding)
+                .padding(.bottom, Layout.watermarkBottomPadding)
         }
     }
 
@@ -243,7 +345,7 @@ struct CameraView: View {
             FixedPositionRotatedView(angle: rotationAngle.degrees) {
                 watermark
             }
-            .aspectRatio(cameraViewModel.aspectRatio, contentMode: .fit)
+            .aspectRatio(aspectRatio, contentMode: .fit)
             .background(content: {
                 GeometryReader { proxy in
                     Color.clear.task(id: proxy.size) {
@@ -265,7 +367,7 @@ struct CameraView: View {
             }
 
             if cameraViewModel.isRecording {
-                Color.clear.aspectRatio(cameraViewModel.aspectRatio, contentMode: .fit)
+                Color.clear.aspectRatio(aspectRatio, contentMode: .fit)
                     .overlay(alignment: .topTrailing) {
                         Text(cameraViewModel.recordingDuration.durationString)
                             .padding(4)
@@ -274,7 +376,7 @@ struct CameraView: View {
                     }
             }
             if showZoomFactorView {
-                Color.clear.aspectRatio(cameraViewModel.aspectRatio, contentMode: .fit).overlay {
+                Color.clear.aspectRatio(aspectRatio, contentMode: .fit).overlay {
                     VStack {
                         Spacer()
                         Text("\(String(format: "%.1fX", zoomFactor * gestureScale))")
@@ -326,7 +428,7 @@ struct CameraView: View {
     }
 
     var contentView: some View {
-        ZStack(alignment: .top) {
+        ZStack {
             previewWithLabels
                 .aspectRatio(Theme.previewAspectRatio, contentMode: .fit)
                 .gesture(magnificationGesture)
@@ -398,6 +500,8 @@ struct CameraView: View {
                 updateWatermarkForVideoRecording()
             }.onChange(of: cameraViewModel.isRecording) { _ in
                 updateWatermarkForVideoRecording()
+            }.onChange(of: altitudeDataMode.altitudeModel.preferences.watermarkStyle) { _ in
+                updateWatermarkForVideoRecording()
             }
             .onReceive(cameraViewModel.eventPublisher) { event in
                 switch event {
@@ -440,13 +544,17 @@ extension CameraView {
     }
 
     private func generateSnapshot(sourceImage: CIImage) {
-        let watermark = generateSnapshot(sourceImageSize: sourceImage.extent.size)
+        // Keep photo output framing consistent with the preview before placing watermark.
+        let targetAspectRatio = aspectRatio
+        let croppedSourceImage = sourceImage.cropToAspectRatio(targetAspectRatio)
+
+        let watermark = generateSnapshot(sourceImageSize: croppedSourceImage.extent.size)
         let watermarkImage = watermark.image
             .transformed(by: CGAffineTransform(translationX: watermark.position.x, y: watermark.position.y))
 
         let watermarkFilter = CIFilter(name: "CISourceOverCompositing")!
         watermarkFilter.setValue(
-            sourceImage.correctedExtent,
+            croppedSourceImage.correctedExtent,
             forKey: kCIInputBackgroundImageKey
         )
         watermarkFilter.setValue(
@@ -473,12 +581,14 @@ extension CameraView {
 
     private func generateSnapshot(sourceImageSize: CGSize) -> (image: CIImage, position: CGPoint) {
         let videoSizeOnScreen = cameraViewModel.deviceOrientation.isLandscape ? self.videoSizeOnScreen.revert : self.videoSizeOnScreen
-        let scale = CGFloat(sourceImageSize.width / videoSizeOnScreen.width)
+        let referenceSize = videoSizeOnScreen.width > 0 ? videoSizeOnScreen : sourceImageSize
+        let scale = CGFloat(sourceImageSize.width / referenceSize.width)
 
-        let offsetX = Layout.watermarkPadding * scale
-        let offsetY = (videoSizeOnScreen.height - Layout.watermarkPadding - watermarkSize.height) * scale
+        let offsetX = Layout.watermarkHorizontalPadding * scale
+        // CI coordinates start at bottom-left. Use bottom padding to match preview's bottomLeading placement.
+        let offsetY = Layout.watermarkBottomPadding * scale
 
-        let watermarkImage = watermarkContent
+        let watermarkImage = watermarkRenderContent
             .asImage(
                 size: watermarkSize,
                 scale: scale

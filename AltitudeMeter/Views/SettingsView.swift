@@ -109,6 +109,21 @@ struct SettingsView: View {
             }
 
             HStack {
+                makeLeadingView(imageName: "photo.on.rectangle.angled", title: "水印")
+                Spacer()
+                Picker(
+                    "Select watermark style",
+                    selection: $dataModel.altitudeModel.preferences.watermarkStyle
+                ) {
+                    ForEach(WatermarkStyle.allCases) { option in
+                        Text(option.title).tag(option)
+                    }
+                }
+                .fixedSize()
+                .pickerStyle(.menu)
+            }
+
+            HStack {
                 makeLeadingView(imageName: "bookmark.circle", title: "版本号")
                 Spacer()
                 Text(

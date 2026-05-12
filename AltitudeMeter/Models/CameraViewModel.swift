@@ -72,13 +72,8 @@ class CameraViewModel: ObservableObject {
             .filter({ $0 != .zero })
             .sink { [weak self] size in
                 guard let self else { return }
-                // Update aspect ratio based on video size
-                var aspectRatio: CGFloat = size.width / size.height
-
                 let max = max(size.width, size.height)
                 let min = min(size.width, size.height)
-
-                self.aspectRatio = min / max
                 if deviceOrientation.isLandscape {
                     videoSize = CGSize(
                         width: max, height: min
@@ -88,7 +83,7 @@ class CameraViewModel: ObservableObject {
                         width: min, height: max
                     )
                 }
-                print("Camera video size updated: \(size), aspect ratio: \(self.aspectRatio)")
+                print("Camera video size updated: \(size)")
             }
             .store(in: &cancellables)
 
@@ -147,11 +142,6 @@ class CameraViewModel: ObservableObject {
     @Published var recordingDuration: TimeInterval = 0.0 // duration of the current recording
     private var timer: DispatchSourceTimer?
 
-    @Published var aspectRatio: CGFloat = Theme.previewAspectRatio {
-        didSet {
-            print("aspectRatio updated: \(aspectRatio)")
-        }
-    } // aspect ratio for video preview
     private var cancellables = Set<AnyCancellable>()
     init() {
         Task {

@@ -147,6 +147,39 @@ struct MainContentView: View {
         }
     }
 
+    private var altitudeDisplay: some View {
+        ZStack {
+            Text(dataModel.altitude)
+                .font(.system(size: altitudeFontSize, weight: .bold))
+                .monospacedDigit()
+                .minimumScaleFactor(0.1)
+                .lineLimit(1)
+                .foregroundStyle(Color.black.opacity(0.34))
+                .offset(y: 4)
+                .blur(radius: 7)
+                .scaleEffect(1.01)
+
+            Text(dataModel.altitude)
+                .font(.system(size: altitudeFontSize, weight: .bold))
+                .monospacedDigit()
+                .minimumScaleFactor(0.1)
+                .lineLimit(1)
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [
+                            Color.white,
+                            Color.white.opacity(0.92),
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .shadow(color: Color.black.opacity(0.24), radius: 10, x: 0, y: 5)
+                .shadow(color: Color.white.opacity(0.18), radius: 4, x: 0, y: 0)
+        }
+        .drawingGroup(opaque: false, colorMode: .linear)
+    }
+
     private var gradientBackground: some View {
         LinearGradient(
             gradient: Gradient(colors: [
@@ -199,12 +232,44 @@ struct MainContentView: View {
     }
 
     private var topContent: some View {
-        VStack {
+        VStack(spacing: 6) {
+            Text("实时海拔表")
+                .font(.system(size: 40, weight: .bold))
+                .minimumScaleFactor(0.5)
+                .lineLimit(1)
+                .foregroundColor(.white)
             Text(dataModel.pressure)
                 .foregroundColor(.white)
             Text(dataModel.altitudeAccuracy)
                 .foregroundColor(.white)
         }
+    }
+
+    @ViewBuilder
+    private func topIconButton(systemImage: String, action: @escaping () -> Void)
+        -> some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(.system(size: 28, weight: .regular))
+                .foregroundStyle(.white)
+                .frame(width: 44, height: 44)
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var topBar: some View {
+        HStack {
+            topIconButton(systemImage: "gearshape") {
+                showSettings.toggle()
+            }
+            Spacer()
+            topIconButton(systemImage: "camera") {
+                showCamera.toggle()
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 8)
     }
 
     private var compass: some View {
@@ -218,19 +283,9 @@ struct MainContentView: View {
         ) {
             VStack(alignment: .center, spacing: 0) {
                 Text(dataModel.altitudePrompt)
-                    .font(.system(size: 30, weight: .bold))
+                    .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.white)
-                Text(dataModel.altitude)
-                    .font(.system(size: altitudeFontSize, weight: .bold))
-                    .monospacedDigit()
-                    .minimumScaleFactor(0.1)
-                    .lineLimit(1)
-                    .foregroundStyle(.white)
-                    .shadow(color: altitudeOutlineColor, radius: 0, x: 2, y: 2)
-                    .shadow(color: altitudeOutlineColor, radius: 0, x: -2, y: -2)
-                    .shadow(color: altitudeOutlineColor, radius: 0, x: -2, y: 2)
-                    .shadow(color: altitudeOutlineColor, radius: 0, x: 2, y: -2)
-                    .shadow(color: Color.white.opacity(0.65), radius: 14, x: 0, y: 0)
+                altitudeDisplay
                 Text("当前速度\(dataModel.speed)")
                     .font(.system(size: 20, weight: .bold))
                     .minimumScaleFactor(0.1)
@@ -247,6 +302,7 @@ struct MainContentView: View {
 
     private var contentView: some View {
         VStack {
+            topBar
             Spacer()
             topContent
             Spacer()
@@ -259,38 +315,11 @@ struct MainContentView: View {
                 .overlay { atmosphericOverlay }
                 .edgesIgnoringSafeArea(.all)
         }
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button {
-                    showSettings.toggle()
-                } label: {
-                    Image(systemName: "gearshape")
-                        .padding(12)
-                        .background(.ultraThinMaterial, in: Circle())
-                        .tint(.white)
-                }
-            }
-
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    showCamera.toggle()
-                } label: {
-                    Image(systemName: "camera")
-                        .padding(12)
-                        .background(.ultraThinMaterial, in: Circle())
-                        .tint(.white)
-                }
-            }
-        }
     }
 
     var body: some View {
-        NavigationView {
-            contentView
-                .navigationTitle("实时海拔表")
-                .navigationBarTitleDisplayMode(.inline)
-                .preferredColorScheme(.dark)
-        }
+        contentView
+            .preferredColorScheme(.dark)
         .sheet(isPresented: $showSettings) {
             SettingsView(dataModel: dataModel)
         }

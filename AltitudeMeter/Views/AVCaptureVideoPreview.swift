@@ -32,7 +32,7 @@ class AVCaptureVideoPreview: UIView {
     }
 
     func setupPreviewLayer() {
-        self.previewLayer.videoGravity = .resizeAspect
+        self.previewLayer.videoGravity = .resizeAspectFill
     }
 
     var session: AVCaptureSession? {

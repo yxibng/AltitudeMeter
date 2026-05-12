@@ -147,6 +147,25 @@ enum AppTheme: String, CaseIterable, Identifiable, Codable {
     }
 }
 
+enum WatermarkStyle: String, CaseIterable, Identifiable, Codable {
+    case card
+    case compact
+    case minimal
+
+    var id: String { self.rawValue }
+
+    var title: String {
+        switch self {
+        case .card:
+            return "标准卡片"
+        case .compact:
+            return "紧凑信息"
+        case .minimal:
+            return "极简"
+        }
+    }
+}
+
 extension CLLocationCoordinate2D: @retroactive Equatable {
     public static func == (lhs: CLLocationCoordinate2D, rhs: CLLocationCoordinate2D)
     -> Bool {
@@ -194,6 +213,11 @@ struct Preferences: Codable, Equatable {
             save()
         }
     }
+    var watermarkStyle: WatermarkStyle = .card {
+        didSet {
+            save()
+        }
+    }
 
     enum CodingKeys: String, CodingKey {
         case altitudeUnit
@@ -201,6 +225,7 @@ struct Preferences: Codable, Equatable {
         case pressureUnit
         case bottomContentType
         case appTheme
+        case watermarkStyle
     }
 
     init(
@@ -208,13 +233,15 @@ struct Preferences: Codable, Equatable {
         gpsDisplayType: GpsDisplayType = .dms,
         pressureUnit: PressureUnitType = .kPa,
         bottomContentType: BottomConentType = .gps,
-        appTheme: AppTheme = .vividSky
+        appTheme: AppTheme = .vividSky,
+        watermarkStyle: WatermarkStyle = .card
     ) {
         self.altitudeUnit = altitudeUnit
         self.gpsDisplayType = gpsDisplayType
         self.pressureUnit = pressureUnit
         self.bottomContentType = bottomContentType
         self.appTheme = appTheme
+        self.watermarkStyle = watermarkStyle
     }
 
     init(from decoder: Decoder) throws {
@@ -224,6 +251,7 @@ struct Preferences: Codable, Equatable {
         pressureUnit = try container.decodeIfPresent(PressureUnitType.self, forKey: .pressureUnit) ?? .kPa
         bottomContentType = try container.decodeIfPresent(BottomConentType.self, forKey: .bottomContentType) ?? .gps
         appTheme = try container.decodeIfPresent(AppTheme.self, forKey: .appTheme) ?? .vividSky
+        watermarkStyle = try container.decodeIfPresent(WatermarkStyle.self, forKey: .watermarkStyle) ?? .card
     }
 
     func encode(to encoder: Encoder) throws {
@@ -233,6 +261,7 @@ struct Preferences: Codable, Equatable {
         try container.encode(pressureUnit, forKey: .pressureUnit)
         try container.encode(bottomContentType, forKey: .bottomContentType)
         try container.encode(appTheme, forKey: .appTheme)
+        try container.encode(watermarkStyle, forKey: .watermarkStyle)
     }
 
     init() {
@@ -291,25 +320,11 @@ extension AltitudeDataModel {
     var altitudePrompt: AttributedString {
         var prompt: AttributedString {
             var prompt = AttributedString("当前海拔")
-            prompt.font = .system(size: 30, weight: .bold)
+            prompt.font = .system(size: 20, weight: .bold)
             prompt.foregroundColor = .white
             return prompt
         }
-
-        var unit: AttributedString {
-            var unit: AttributedString!
-
-            switch altitudeModel.preferences.altitudeUnit {
-            case .meter:
-                unit = AttributedString("(m)")
-            case .feet:
-                unit = AttributedString("(ft)")
-            }
-            unit.font = .system(size: 20, weight: .bold)
-            unit.foregroundColor = .white
-            return unit
-        }
-        return prompt + unit
+        return prompt
     }
 
     var altitude: String {

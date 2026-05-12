@@ -42,7 +42,7 @@ class Camera: NSObject {
                         videoSize = captureDevice?.resolution ?? .zero
                         maxZoomFactor = captureDevice?.maxZoomFactor ?? 1.0
                     }
-                    captureSession.sessionPreset = .hd1920x1080
+                    captureSession.sessionPreset = .photo
                     // add audio input if it doesn't exist
                     if let audioDevice,
                        let audioInput = try? AVCaptureDeviceInput(device: audioDevice) {
